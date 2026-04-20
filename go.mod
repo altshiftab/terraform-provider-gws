@@ -3,7 +3,7 @@ module github.com/altshift/terraform-provider-gws
 go 1.25.0
 
 require (
-	github.com/Motmedel/utils_go v0.0.467
+	github.com/Motmedel/utils_go v0.0.468
 	github.com/altshiftab/gcp_utils v0.0.22
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
 )
@@ -36,5 +36,3 @@ require (
 	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
-
-replace github.com/Motmedel/utils_go => /home/vph/code/go/utils_go
