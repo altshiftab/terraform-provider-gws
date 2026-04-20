@@ -141,11 +141,19 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			},
 			"recovery_email": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The user's recovery email address.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"recovery_phone": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The user's recovery phone number.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"customer_id": schema.StringAttribute{
 				Computed:    true,

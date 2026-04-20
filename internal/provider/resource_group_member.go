@@ -85,7 +85,11 @@ func (r *groupMemberResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"delivery_settings": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Delivery settings for the member. ALL_MAIL, DAILY, DIGEST, DISABLED, or NONE.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"etag": schema.StringAttribute{
 				Computed:    true,
