@@ -187,7 +187,7 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading user",
-			fmt.Sprintf("Could not read user %s: %s", userKey, err),
+			fmt.Sprintf("Could not read user %s: %s", userKey, apiErrorDetail(err)),
 		)
 		return
 	}

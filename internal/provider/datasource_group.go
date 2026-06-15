@@ -114,7 +114,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group",
-			fmt.Sprintf("Could not read group %s: %s", groupKey, err),
+			fmt.Sprintf("Could not read group %s: %s", groupKey, apiErrorDetail(err)),
 		)
 		return
 	}

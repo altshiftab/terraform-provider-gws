@@ -134,7 +134,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"An error occurred when finding default credentials.",
-				fmt.Sprintf("Application Default Credentials not found: %s", err),
+				fmt.Sprintf("Application Default Credentials not found: %s", apiErrorDetail(err)),
 			)
 			return
 		}

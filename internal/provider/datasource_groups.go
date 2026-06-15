@@ -111,7 +111,7 @@ func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error listing groups",
-			fmt.Sprintf("Could not list groups: %s", err),
+			fmt.Sprintf("Could not list groups: %s", apiErrorDetail(err)),
 		)
 		return
 	}

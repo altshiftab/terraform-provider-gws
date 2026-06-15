@@ -177,7 +177,7 @@ func (r *gmailFilterResource) Create(ctx context.Context, req resource.CreateReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Gmail filter",
-			fmt.Sprintf("Could not create filter for user %s: %s", userId, err),
+			fmt.Sprintf("Could not create filter for user %s: %s", userId, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -203,7 +203,7 @@ func (r *gmailFilterResource) Read(ctx context.Context, req resource.ReadRequest
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Gmail filter",
-			fmt.Sprintf("Could not read filter %s for user %s: %s", filterId, userId, err),
+			fmt.Sprintf("Could not read filter %s for user %s: %s", filterId, userId, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -244,7 +244,7 @@ func (r *gmailFilterResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Gmail filter",
-			fmt.Sprintf("Could not delete filter %s for user %s: %s", filterId, userId, err),
+			fmt.Sprintf("Could not delete filter %s for user %s: %s", filterId, userId, apiErrorDetail(err)),
 		)
 		return
 	}

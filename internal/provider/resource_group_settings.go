@@ -248,7 +248,7 @@ func (r *groupSettingsResource) Create(ctx context.Context, req resource.CreateR
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error setting group settings",
-			fmt.Sprintf("Could not set settings for group %s: %s", groupEmail, err),
+			fmt.Sprintf("Could not set settings for group %s: %s", groupEmail, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -270,7 +270,7 @@ func (r *groupSettingsResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group settings",
-			fmt.Sprintf("Could not read settings for group %s: %s", groupEmail, err),
+			fmt.Sprintf("Could not read settings for group %s: %s", groupEmail, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -298,7 +298,7 @@ func (r *groupSettingsResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating group settings",
-			fmt.Sprintf("Could not update settings for group %s: %s", groupEmail, err),
+			fmt.Sprintf("Could not update settings for group %s: %s", groupEmail, apiErrorDetail(err)),
 		)
 		return
 	}

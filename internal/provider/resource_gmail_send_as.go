@@ -132,7 +132,7 @@ func (r *gmailSendAsResource) Create(ctx context.Context, req resource.CreateReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Gmail send-as alias",
-			fmt.Sprintf("Could not create send-as alias %s for user %s: %s", plan.SendAsEmail.ValueString(), userId, err),
+			fmt.Sprintf("Could not create send-as alias %s for user %s: %s", plan.SendAsEmail.ValueString(), userId, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -155,7 +155,7 @@ func (r *gmailSendAsResource) Read(ctx context.Context, req resource.ReadRequest
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Gmail send-as alias",
-			fmt.Sprintf("Could not read send-as alias %s for user %s: %s", sendAsEmail, userId, err),
+			fmt.Sprintf("Could not read send-as alias %s for user %s: %s", sendAsEmail, userId, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -187,7 +187,7 @@ func (r *gmailSendAsResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Gmail send-as alias",
-			fmt.Sprintf("Could not update send-as alias %s for user %s: %s", sendAsEmail, userId, err),
+			fmt.Sprintf("Could not update send-as alias %s for user %s: %s", sendAsEmail, userId, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -210,7 +210,7 @@ func (r *gmailSendAsResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Gmail send-as alias",
-			fmt.Sprintf("Could not delete send-as alias %s for user %s: %s", sendAsEmail, userId, err),
+			fmt.Sprintf("Could not delete send-as alias %s for user %s: %s", sendAsEmail, userId, apiErrorDetail(err)),
 		)
 		return
 	}

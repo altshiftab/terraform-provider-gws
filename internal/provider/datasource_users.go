@@ -207,7 +207,7 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error listing users",
-			fmt.Sprintf("Could not list users: %s", err),
+			fmt.Sprintf("Could not list users: %s", apiErrorDetail(err)),
 		)
 		return
 	}

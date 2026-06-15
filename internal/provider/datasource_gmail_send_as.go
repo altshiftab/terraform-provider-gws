@@ -113,7 +113,7 @@ func (d *gmailSendAsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Gmail send-as alias",
-			fmt.Sprintf("Could not read send-as alias %s for user %s: %s", sendAsEmail, userId, err),
+			fmt.Sprintf("Could not read send-as alias %s for user %s: %s", sendAsEmail, userId, apiErrorDetail(err)),
 		)
 		return
 	}

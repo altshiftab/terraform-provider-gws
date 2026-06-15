@@ -153,7 +153,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating group",
-			fmt.Sprintf("Could not create group %s: %s", plan.Email.ValueString(), err),
+			fmt.Sprintf("Could not create group %s: %s", plan.Email.ValueString(), apiErrorDetail(err)),
 		)
 		return
 	}
@@ -178,7 +178,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group",
-			fmt.Sprintf("Could not read group %s: %s", groupKey, err),
+			fmt.Sprintf("Could not read group %s: %s", groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -216,7 +216,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating group",
-			fmt.Sprintf("Could not update group %s: %s", groupKey, err),
+			fmt.Sprintf("Could not update group %s: %s", groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -232,7 +232,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group after update",
-			fmt.Sprintf("Could not read group %s: %s", readKey, err),
+			fmt.Sprintf("Could not read group %s: %s", readKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -257,7 +257,7 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting group",
-			fmt.Sprintf("Could not delete group %s: %s", groupKey, err),
+			fmt.Sprintf("Could not delete group %s: %s", groupKey, apiErrorDetail(err)),
 		)
 		return
 	}

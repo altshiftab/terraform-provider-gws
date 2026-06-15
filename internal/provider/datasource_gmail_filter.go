@@ -142,7 +142,7 @@ func (d *gmailFilterDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Gmail filter",
-			fmt.Sprintf("Could not read filter %s for user %s: %s", filterId, userId, err),
+			fmt.Sprintf("Could not read filter %s for user %s: %s", filterId, userId, apiErrorDetail(err)),
 		)
 		return
 	}

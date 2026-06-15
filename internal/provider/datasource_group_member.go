@@ -108,7 +108,7 @@ func (d *groupMemberDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group member",
-			fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, err),
+			fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
 		)
 		return
 	}

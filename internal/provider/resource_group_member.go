@@ -136,7 +136,7 @@ func (r *groupMemberResource) Create(ctx context.Context, req resource.CreateReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating group member",
-			fmt.Sprintf("Could not add %s to group %s: %s", plan.Email.ValueString(), groupKey, err),
+			fmt.Sprintf("Could not add %s to group %s: %s", plan.Email.ValueString(), groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -162,7 +162,7 @@ func (r *groupMemberResource) Read(ctx context.Context, req resource.ReadRequest
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group member",
-			fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, err),
+			fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -201,7 +201,7 @@ func (r *groupMemberResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating group member",
-			fmt.Sprintf("Could not update member %s in group %s: %s", memberKey, groupKey, err),
+			fmt.Sprintf("Could not update member %s in group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -227,7 +227,7 @@ func (r *groupMemberResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting group member",
-			fmt.Sprintf("Could not remove member %s from group %s: %s", memberKey, groupKey, err),
+			fmt.Sprintf("Could not remove member %s from group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
 		)
 		return
 	}

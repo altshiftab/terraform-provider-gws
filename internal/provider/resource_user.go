@@ -275,7 +275,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating user",
-			fmt.Sprintf("Could not create user %s: %s", plan.PrimaryEmail.ValueString(), err),
+			fmt.Sprintf("Could not create user %s: %s", plan.PrimaryEmail.ValueString(), apiErrorDetail(err)),
 		)
 		return
 	}
@@ -300,7 +300,7 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading user",
-			fmt.Sprintf("Could not read user %s: %s", userKey, err),
+			fmt.Sprintf("Could not read user %s: %s", userKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -354,7 +354,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating user",
-			fmt.Sprintf("Could not update user %s: %s", userKey, err),
+			fmt.Sprintf("Could not update user %s: %s", userKey, apiErrorDetail(err)),
 		)
 		return
 	}
@@ -379,7 +379,7 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting user",
-			fmt.Sprintf("Could not delete user %s: %s", userKey, err),
+			fmt.Sprintf("Could not delete user %s: %s", userKey, apiErrorDetail(err)),
 		)
 		return
 	}

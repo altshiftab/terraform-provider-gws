@@ -220,7 +220,7 @@ func (d *groupSettingsDataSource) Read(ctx context.Context, req datasource.ReadR
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading group settings",
-			fmt.Sprintf("Could not read settings for group %s: %s", groupEmail, err),
+			fmt.Sprintf("Could not read settings for group %s: %s", groupEmail, apiErrorDetail(err)),
 		)
 		return
 	}
