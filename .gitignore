@@ -6,6 +6,7 @@
 
 !/.goreleaser.yml
 !/terraform-registry-manifest.json
+!/RELEASING.md
 
 !/scripts
 !/scripts/**/*
