@@ -4,6 +4,12 @@
 !/go.sum
 !/main.go
 
+!/.goreleaser.yml
+!/terraform-registry-manifest.json
+
+!/scripts
+!/scripts/**/*
+
 !/internal
 
 !/internal/**/*

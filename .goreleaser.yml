@@ -1,0 +1,63 @@
+# Builds and signs release artifacts for the gws Terraform provider.
+#
+# Produces, under dist/:
+#   - one zip per OS/arch (terraform-provider-gws_<version>_<os>_<arch>.zip)
+#   - terraform-provider-gws_<version>_SHA256SUMS         (sha256 of every zip)
+#   - terraform-provider-gws_<version>_SHA256SUMS.sig     (detached GPG signature)
+#
+# Publishing to the HCP private registry is done separately by
+# scripts/publish-hcp.sh; GoReleaser does NOT create a GitHub release here.
+#
+# Run with:  GPG_FINGERPRINT=F3FA05768865F190FBB0EF51888CD0428F90299C \
+#            goreleaser release --clean --skip=publish
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+      # Matches the local Makefile build: the provider needs encoding/json/v2.
+      - GOEXPERIMENT=jsonv2
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{ .Version }}'
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Terraform expects the binary named terraform-provider-<name>_v<version>.
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - formats: [zip]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
+release:
+  # We publish to the HCP private registry via scripts/publish-hcp.sh, not GitHub.
+  disable: true
+
+changelog:
+  disable: true
