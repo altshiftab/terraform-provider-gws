@@ -8,6 +8,7 @@ import (
 
 	motmedelGcp "github.com/Motmedel/utils_go/pkg/cloud/gcp"
 	"github.com/Motmedel/utils_go/pkg/cloud/gcp/types/credentials_file"
+	domainWideDelegationTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/domain_wide_delegation_token_source"
 	serviceAccountTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/service_account_token_source"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail"
@@ -42,9 +43,15 @@ type gwsProviderServiceAccountModel struct {
 	Subject     types.String `tfsdk:"subject"`
 }
 
+type gwsProviderImpersonationModel struct {
+	ServiceAccount types.String `tfsdk:"service_account"`
+	Subject        types.String `tfsdk:"subject"`
+}
+
 type gwsProviderModel struct {
 	Oauth2         *gwsProviderOauth2Model         `tfsdk:"oauth2"`
 	ServiceAccount *gwsProviderServiceAccountModel `tfsdk:"service_account"`
+	Impersonation  *gwsProviderImpersonationModel  `tfsdk:"impersonation"`
 }
 
 type gwsProviderData struct {
@@ -114,6 +121,20 @@ func (p *gwsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 					},
 				},
 			},
+			"impersonation": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Keyless Google Workspace domain-wide delegation. The provider's Application Default Credentials impersonate `service_account` (via IAM signJwt) to act as `subject` — no key is used. The ADC identity needs roles/iam.serviceAccountTokenCreator on the service account, and iamcredentials.googleapis.com must be enabled. Mutually exclusive with `oauth2` and `service_account`.",
+				Attributes: map[string]schema.Attribute{
+					"service_account": schema.StringAttribute{
+						Required:    true,
+						Description: "Email of the service account that has domain-wide delegation.",
+					},
+					"subject": schema.StringAttribute{
+						Required:    true,
+						Description: "Email address of the user to impersonate (the mailbox to act on).",
+					},
+				},
+			},
 		},
 	}
 }
@@ -125,10 +146,20 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
-	if config.Oauth2 != nil && config.ServiceAccount != nil {
+	authModes := 0
+	if config.Oauth2 != nil {
+		authModes++
+	}
+	if config.ServiceAccount != nil {
+		authModes++
+	}
+	if config.Impersonation != nil {
+		authModes++
+	}
+	if authModes > 1 {
 		resp.Diagnostics.AddError(
 			"Conflicting authentication configuration",
-			"Only one of `oauth2` or `service_account` may be set.",
+			"At most one of `oauth2`, `service_account`, or `impersonation` may be set.",
 		)
 		return
 	}
@@ -190,6 +221,49 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			return
 		}
 		tokenSource = token_source.NewReusable(nil, ts)
+	case config.Impersonation != nil:
+		gcpClient := motmedelGcp.NewClient()
+		signer, err := gcpClient.FindDefaultCredentials(
+			context.Background(),
+			[]string{"https://www.googleapis.com/auth/cloud-platform"},
+		)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"An error occurred when finding default credentials for impersonation.",
+				fmt.Sprintf("Application Default Credentials not found: %s", apiErrorDetail(err)),
+			)
+			return
+		}
+		if utils.IsNil(signer) {
+			resp.Diagnostics.AddError(
+				"The default credentials token source is nil.",
+				"",
+			)
+			return
+		}
+		ts, err := domainWideDelegationTokenSource.New(
+			context.Background(),
+			signer,
+			config.Impersonation.ServiceAccount.ValueString(),
+			config.Impersonation.Subject.ValueString(),
+			[]string{
+				"https://www.googleapis.com/auth/admin.directory.user",
+				"https://www.googleapis.com/auth/admin.directory.group",
+				"https://www.googleapis.com/auth/admin.directory.group.member",
+				"https://www.googleapis.com/auth/apps.groups.settings",
+				"https://www.googleapis.com/auth/gmail.settings.basic",
+				"https://www.googleapis.com/auth/gmail.settings.sharing",
+			},
+			googleTokenURL,
+		)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"An error occurred when building the impersonation token source.",
+				fmt.Sprintf("Could not build impersonation token source: %s", apiErrorDetail(err)),
+			)
+			return
+		}
+		tokenSource = ts
 	default:
 		gcpClient := motmedelGcp.NewClient()
 		ts, err := gcpClient.FindDefaultCredentials(
