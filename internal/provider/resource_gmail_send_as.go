@@ -257,9 +257,25 @@ func mapSendAsToState(s *send_as.SendAs, state *gmailSendAsResourceModel) {
 	}
 
 	state.SendAsEmail = types.StringValue(s.SendAsEmail)
-	state.DisplayName = types.StringValue(s.DisplayName)
-	state.ReplyToAddress = types.StringValue(s.ReplyToAddress)
-	state.Signature = types.StringValue(s.Signature)
+
+	// These are optional (not computed); map the API's empty strings back to null
+	// so the result stays consistent with a config that leaves them unset.
+	if s.DisplayName != "" {
+		state.DisplayName = types.StringValue(s.DisplayName)
+	} else {
+		state.DisplayName = types.StringNull()
+	}
+	if s.ReplyToAddress != "" {
+		state.ReplyToAddress = types.StringValue(s.ReplyToAddress)
+	} else {
+		state.ReplyToAddress = types.StringNull()
+	}
+	if s.Signature != "" {
+		state.Signature = types.StringValue(s.Signature)
+	} else {
+		state.Signature = types.StringNull()
+	}
+
 	state.TreatAsAlias = types.BoolValue(s.TreatAsAlias)
 	state.IsPrimary = types.BoolValue(s.IsPrimary)
 	state.IsDefault = types.BoolValue(s.IsDefault)
