@@ -2,10 +2,13 @@ package provider
 
 import (
 	"context"
+	"encoding/json/v2"
 	"fmt"
 	"net/http"
 
 	motmedelGcp "github.com/Motmedel/utils_go/pkg/cloud/gcp"
+	"github.com/Motmedel/utils_go/pkg/cloud/gcp/types/credentials_file"
+	serviceAccountTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/service_account_token_source"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/groups_settings"
@@ -34,8 +37,14 @@ type gwsProviderOauth2Model struct {
 	TokenUrl     types.String `tfsdk:"token_url"`
 }
 
+type gwsProviderServiceAccountModel struct {
+	Credentials types.String `tfsdk:"credentials"`
+	Subject     types.String `tfsdk:"subject"`
+}
+
 type gwsProviderModel struct {
-	Oauth2 *gwsProviderOauth2Model `tfsdk:"oauth2"`
+	Oauth2         *gwsProviderOauth2Model         `tfsdk:"oauth2"`
+	ServiceAccount *gwsProviderServiceAccountModel `tfsdk:"service_account"`
 }
 
 type gwsProviderData struct {
@@ -90,6 +99,21 @@ func (p *gwsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 					},
 				},
 			},
+			"service_account": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Service account credentials with Google Workspace domain-wide delegation; the service account impersonates `subject`. Required for Gmail send-as, which is only available to DWD service account clients. Mutually exclusive with `oauth2`.",
+				Attributes: map[string]schema.Attribute{
+					"credentials": schema.StringAttribute{
+						Required:    true,
+						Sensitive:   true,
+						Description: "Service account key JSON.",
+					},
+					"subject": schema.StringAttribute{
+						Required:    true,
+						Description: "Email address of the user to impersonate (the mailbox to act on).",
+					},
+				},
+			},
 		},
 	}
 }
@@ -101,8 +125,17 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
+	if config.Oauth2 != nil && config.ServiceAccount != nil {
+		resp.Diagnostics.AddError(
+			"Conflicting authentication configuration",
+			"Only one of `oauth2` or `service_account` may be set.",
+		)
+		return
+	}
+
 	var tokenSource token_source.TokenSource
-	if config.Oauth2 != nil {
+	switch {
+	case config.Oauth2 != nil:
 		tokenUrl := config.Oauth2.TokenUrl.ValueString()
 		if tokenUrl == "" {
 			tokenUrl = googleTokenURL
@@ -119,7 +152,45 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			context.Background(),
 			&token.Token{RefreshToken: config.Oauth2.RefreshToken.ValueString()},
 		)
-	} else {
+	case config.ServiceAccount != nil:
+		var credentialsFile credentials_file.File
+		if err := json.Unmarshal([]byte(config.ServiceAccount.Credentials.ValueString()), &credentialsFile); err != nil {
+			resp.Diagnostics.AddError(
+				"Invalid service account credentials",
+				fmt.Sprintf("Could not parse the service account key JSON: %s", err),
+			)
+			return
+		}
+		ts, err := serviceAccountTokenSource.NewFromCredentialsFileWithSubject(
+			context.Background(),
+			googleTokenURL,
+			&credentialsFile,
+			[]string{
+				"https://www.googleapis.com/auth/admin.directory.user",
+				"https://www.googleapis.com/auth/admin.directory.group",
+				"https://www.googleapis.com/auth/admin.directory.group.member",
+				"https://www.googleapis.com/auth/apps.groups.settings",
+				"https://www.googleapis.com/auth/gmail.settings.basic",
+				"https://www.googleapis.com/auth/gmail.settings.sharing",
+			},
+			config.ServiceAccount.Subject.ValueString(),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"An error occurred when building the service account token source.",
+				fmt.Sprintf("Could not build service account token source: %s", apiErrorDetail(err)),
+			)
+			return
+		}
+		if utils.IsNil(ts) {
+			resp.Diagnostics.AddError(
+				"The service account token source is nil.",
+				"",
+			)
+			return
+		}
+		tokenSource = token_source.NewReusable(nil, ts)
+	default:
 		gcpClient := motmedelGcp.NewClient()
 		ts, err := gcpClient.FindDefaultCredentials(
 			context.Background(),
