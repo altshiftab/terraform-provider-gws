@@ -153,9 +153,11 @@ func (r *groupMemberResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	groupKey := state.GroupKey.ValueString()
-	memberKey := state.Email.ValueString()
+	// Prefer the member ID: members.get returns 404 by email for external members
+	// (a different domain), but always resolves by the stable member ID.
+	memberKey := state.Id.ValueString()
 	if memberKey == "" {
-		memberKey = state.Id.ValueString()
+		memberKey = state.Email.ValueString()
 	}
 
 	apiMember, err := r.client.GetMember(ctx, groupKey, memberKey, fetchOptions(r.providerData)...)
@@ -186,9 +188,9 @@ func (r *groupMemberResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	groupKey := state.GroupKey.ValueString()
-	memberKey := state.Email.ValueString()
+	memberKey := state.Id.ValueString()
 	if memberKey == "" {
-		memberKey = state.Id.ValueString()
+		memberKey = state.Email.ValueString()
 	}
 
 	apiMember := &member.Member{
@@ -238,13 +240,43 @@ func (r *groupMemberResource) ImportState(ctx context.Context, req resource.Impo
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Invalid import ID",
-			fmt.Sprintf("Expected format: group_email/member_email, got: %s", req.ID),
+			fmt.Sprintf("Expected format: group_key/member_email (member_id also accepted), got: %s", req.ID),
+		)
+		return
+	}
+	groupKey := parts[0]
+	memberKey := parts[1]
+
+	// members.get returns 404 by email for external members (a different domain),
+	// so resolve the member via the member list and key state on the stable member
+	// ID. memberKey may be an email or an ID.
+	members, err := r.client.ListMembers(ctx, groupKey, fetchOptions(r.providerData)...)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error listing group members for import",
+			fmt.Sprintf("Could not list members of group %s: %s", groupKey, apiErrorDetail(err)),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("group_key"), parts[0])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("email"), parts[1])...)
+	var match *member.Member
+	for _, m := range members {
+		if m.Id == memberKey || strings.EqualFold(m.Email, memberKey) {
+			match = m
+			break
+		}
+	}
+	if match == nil {
+		resp.Diagnostics.AddError(
+			"Group member not found",
+			fmt.Sprintf("No member %q found in group %s.", memberKey, groupKey),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("group_key"), groupKey)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("email"), match.Email)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), match.Id)...)
 }
 
 func mapMemberToState(m *member.Member, state *groupMemberResourceModel) {
