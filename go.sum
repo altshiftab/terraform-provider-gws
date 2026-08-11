@@ -1,13 +1,7 @@
-github.com/Motmedel/parsing_utils v0.0.6 h1:4JXg7ngyTuGb5klVb8coFac3Fi1yUDgQn6vvq9lWnig=
-github.com/Motmedel/parsing_utils v0.0.6/go.mod h1:lfPAtBuW+vvW6htr800C7jxVSDl3p2YuQcH4NLZR85o=
-github.com/Motmedel/utils_go v0.0.488 h1:URUoAw2TF1QyrYM4F1FuYlRzf3TRo0Xh7rZdlyiBwy4=
-github.com/Motmedel/utils_go v0.0.488/go.mod h1:OW6mJSOYgP8XP7NEqsAlfKP5U6OyR6oTI/Z/SZsxmpw=
-github.com/Motmedel/utils_go/pkg/http/parsing/headers v0.0.37 h1:K0B7NKZgHN7VKKR4mRJTr5hudqFxHix2/e5fff08928=
-github.com/Motmedel/utils_go/pkg/http/parsing/headers v0.0.37/go.mod h1:+ULBRVi6f6r+nDasZifhEnTRxKF15zH9dLN0rxuco/I=
-github.com/altshiftab/gcp_utils v0.0.22 h1:UYZzgxnXkAlA29hIMVsVpFxPdONFkjE3ae7tHlvrlIA=
-github.com/altshiftab/gcp_utils v0.0.22/go.mod h1:+wZysf3rk//f2wD4q1wbYMoTzjsBhzVhuiai+B08VgA=
-github.com/altshiftab/gcp_utils/pkg/http v0.0.61 h1:7Hk6LTeop3YxqzHQXbUgfu+qBEN4RummLu7+msD4M4g=
-github.com/altshiftab/gcp_utils/pkg/http v0.0.61/go.mod h1:ZABnC8nehhsOc5uiiZHkmqzY7vxFKRsos++z0o2LBvU=
+github.com/Motmedel/utils_go v1.9.0 h1:HzsKFofqIopOpvtsrxBN22mkGlFloMw5y957z/GTFNI=
+github.com/Motmedel/utils_go v1.9.0/go.mod h1:OW6mJSOYgP8XP7NEqsAlfKP5U6OyR6oTI/Z/SZsxmpw=
+github.com/altshiftab/gcp_utils v1.1.1 h1:RswxQbMebIGbeVWr6zbvRTSDutoy9d115wAZNhRasYA=
+github.com/altshiftab/gcp_utils v1.1.1/go.mod h1:uzIb69P0tm1z/p/snwzkw3kpCjFdA6mkiJgt18HDqGs=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -56,8 +50,6 @@ github.com/mitchellh/go-testing-interface v1.14.1 h1:jrgshOhYAUVNMAJiKbEu7EqAwgJ
 github.com/mitchellh/go-testing-interface v1.14.1/go.mod h1:gfgS7OtZj6MA4U1UrDRp04twqAjfvlZyCfX3sDjEym8=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
-github.com/pandatix/go-abnf v0.4.1 h1:IG6CwAkMi+r7KKMHnY0yXIMbxL1h7qOYih8Txy1F4Hs=
-github.com/pandatix/go-abnf v0.4.1/go.mod h1:tk1wuyudYVbz8j9YAShvNzuWkSzrAwPhKITbqR0+TlE=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
