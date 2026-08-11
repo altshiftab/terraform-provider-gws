@@ -11,6 +11,8 @@ import (
 	domainWideDelegationTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/domain_wide_delegation_token_source"
 	serviceAccountTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/service_account_token_source"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
+	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive"
+	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive/drive_config"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail"
 	"github.com/Motmedel/utils_go/pkg/cloud/gws/groups_settings"
 	"github.com/Motmedel/utils_go/pkg/http/types/fetch_config"
@@ -58,6 +60,7 @@ type gwsProviderData struct {
 	directoryClient      *directory.Client
 	groupsSettingsClient *groups_settings.Client
 	gmailClient          *gmail.Client
+	driveClient          *drive.Client
 	fetchOption          fetch_config.Option
 }
 
@@ -203,6 +206,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 				"https://www.googleapis.com/auth/apps.groups.settings",
 				"https://www.googleapis.com/auth/gmail.settings.basic",
 				"https://www.googleapis.com/auth/gmail.settings.sharing",
+				drive.ScopeDrive,
 			},
 			config.ServiceAccount.Subject.ValueString(),
 		)
@@ -253,6 +257,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 				"https://www.googleapis.com/auth/apps.groups.settings",
 				"https://www.googleapis.com/auth/gmail.settings.basic",
 				"https://www.googleapis.com/auth/gmail.settings.sharing",
+				drive.ScopeDrive,
 			},
 			googleTokenURL,
 		)
@@ -274,6 +279,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 				"https://www.googleapis.com/auth/admin.directory.group.member",
 				"https://www.googleapis.com/auth/apps.groups.settings",
 				"https://www.googleapis.com/auth/gmail.settings.basic",
+				drive.ScopeDrive,
 			},
 		)
 		if err != nil {
@@ -297,6 +303,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		directoryClient:      directory.NewClient(),
 		groupsSettingsClient: groups_settings.NewClient(),
 		gmailClient:          gmail.NewClient(),
+		driveClient:          drive.NewClient(drive_config.WithSupportsAllDrives(true)),
 		fetchOption: fetch_config.WithHttpClient(
 			&http.Client{
 				Transport: &motmedelOauth2Transport.Transport{Source: tokenSource},
@@ -316,6 +323,7 @@ func (p *gwsProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewGroupSettingsResource,
 		NewGmailSendAsResource,
 		NewGmailFilterResource,
+		NewDrivePermissionResource,
 	}
 }
 
@@ -330,6 +338,7 @@ func (p *gwsProvider) DataSources(_ context.Context) []func() datasource.DataSou
 		NewGroupSettingsDataSource,
 		NewGmailSendAsDataSource,
 		NewGmailFilterDataSource,
+		NewDrivePermissionDataSource,
 	}
 }
 
