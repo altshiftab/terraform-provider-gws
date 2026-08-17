@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive/types/permission"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/drive"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/drive/types/permission"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"

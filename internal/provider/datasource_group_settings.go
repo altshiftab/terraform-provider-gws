@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/groups_settings"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/groups_settings"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"

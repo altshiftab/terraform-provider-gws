@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory/types/user"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory/types/user/name"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory/types/user"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory/types/user/name"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,21 +23,21 @@ var (
 )
 
 type userResourceModel struct {
-	Id                        types.String `tfsdk:"id"`
-	PrimaryEmail              types.String `tfsdk:"primary_email"`
-	GivenName                 types.String `tfsdk:"given_name"`
-	FamilyName                types.String `tfsdk:"family_name"`
-	Password                  types.String `tfsdk:"password"`
-	HashFunction              types.String `tfsdk:"hash_function"`
-	IsAdmin                   types.Bool   `tfsdk:"is_admin"`
-	Suspended                 types.Bool   `tfsdk:"suspended"`
-	Archived                  types.Bool   `tfsdk:"archived"`
-	ChangePasswordAtNextLogin types.Bool   `tfsdk:"change_password_at_next_login"`
-	IpWhitelisted             types.Bool   `tfsdk:"ip_whitelisted"`
-	IncludeInGlobalAddressList types.Bool  `tfsdk:"include_in_global_address_list"`
-	OrgUnitPath               types.String `tfsdk:"org_unit_path"`
-	RecoveryEmail             types.String `tfsdk:"recovery_email"`
-	RecoveryPhone             types.String `tfsdk:"recovery_phone"`
+	Id                         types.String `tfsdk:"id"`
+	PrimaryEmail               types.String `tfsdk:"primary_email"`
+	GivenName                  types.String `tfsdk:"given_name"`
+	FamilyName                 types.String `tfsdk:"family_name"`
+	Password                   types.String `tfsdk:"password"`
+	HashFunction               types.String `tfsdk:"hash_function"`
+	IsAdmin                    types.Bool   `tfsdk:"is_admin"`
+	Suspended                  types.Bool   `tfsdk:"suspended"`
+	Archived                   types.Bool   `tfsdk:"archived"`
+	ChangePasswordAtNextLogin  types.Bool   `tfsdk:"change_password_at_next_login"`
+	IpWhitelisted              types.Bool   `tfsdk:"ip_whitelisted"`
+	IncludeInGlobalAddressList types.Bool   `tfsdk:"include_in_global_address_list"`
+	OrgUnitPath                types.String `tfsdk:"org_unit_path"`
+	RecoveryEmail              types.String `tfsdk:"recovery_email"`
+	RecoveryPhone              types.String `tfsdk:"recovery_phone"`
 
 	// Computed
 	CustomerId       types.String `tfsdk:"customer_id"`
@@ -54,7 +54,7 @@ type userResourceModel struct {
 }
 
 type userResource struct {
-	client      *directory.Client
+	client       *directory.Client
 	providerData *gwsProviderData
 }
 

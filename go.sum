@@ -1,7 +1,5 @@
-github.com/Motmedel/utils_go v1.9.0 h1:HzsKFofqIopOpvtsrxBN22mkGlFloMw5y957z/GTFNI=
-github.com/Motmedel/utils_go v1.9.0/go.mod h1:OW6mJSOYgP8XP7NEqsAlfKP5U6OyR6oTI/Z/SZsxmpw=
-github.com/altshiftab/gcp_utils v1.1.1 h1:RswxQbMebIGbeVWr6zbvRTSDutoy9d115wAZNhRasYA=
-github.com/altshiftab/gcp_utils v1.1.1/go.mod h1:uzIb69P0tm1z/p/snwzkw3kpCjFdA6mkiJgt18HDqGs=
+github.com/altshiftab/utils_go v1.22.0 h1:QrAOa3guwwB0b/DX7sfDCWmxGK1gGtifgV6gtOhmWHc=
+github.com/altshiftab/utils_go v1.22.0/go.mod h1:VSr1HgvPdUxUV9Y97SfmxANI27QMZ6V1co3/pDlZ8A8=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

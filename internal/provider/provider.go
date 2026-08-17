@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"net/http"
 
-	motmedelGcp "github.com/Motmedel/utils_go/pkg/cloud/gcp"
-	"github.com/Motmedel/utils_go/pkg/cloud/gcp/types/credentials_file"
-	domainWideDelegationTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/domain_wide_delegation_token_source"
-	serviceAccountTokenSource "github.com/Motmedel/utils_go/pkg/cloud/gcp/types/token_source/service_account_token_source"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive/drive_config"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/groups_settings"
-	"github.com/Motmedel/utils_go/pkg/http/types/fetch_config"
-	oauth2Config "github.com/Motmedel/utils_go/pkg/oauth2/types/config"
-	"github.com/Motmedel/utils_go/pkg/oauth2/types/endpoint"
-	"github.com/Motmedel/utils_go/pkg/oauth2/types/token"
-	"github.com/Motmedel/utils_go/pkg/oauth2/types/token_source"
-	motmedelOauth2Transport "github.com/Motmedel/utils_go/pkg/oauth2/types/transport"
-	"github.com/Motmedel/utils_go/pkg/utils"
+	altshiftGcp "github.com/altshiftab/utils_go/pkg/cloud/gcp"
+	"github.com/altshiftab/utils_go/pkg/cloud/gcp/types/credentials_file"
+	domainWideDelegationTokenSource "github.com/altshiftab/utils_go/pkg/cloud/gcp/types/token_source/domain_wide_delegation_token_source"
+	serviceAccountTokenSource "github.com/altshiftab/utils_go/pkg/cloud/gcp/types/token_source/service_account_token_source"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/drive"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/drive/drive_config"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/gmail"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/groups_settings"
+	"github.com/altshiftab/utils_go/pkg/http/types/fetch_config"
+	oauth2Config "github.com/altshiftab/utils_go/pkg/oauth2/types/config"
+	"github.com/altshiftab/utils_go/pkg/oauth2/types/endpoint"
+	"github.com/altshiftab/utils_go/pkg/oauth2/types/token"
+	"github.com/altshiftab/utils_go/pkg/oauth2/types/token_source"
+	altshiftOauth2Transport "github.com/altshiftab/utils_go/pkg/oauth2/types/transport"
+	"github.com/altshiftab/utils_go/pkg/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -226,7 +226,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		}
 		tokenSource = token_source.NewReusable(nil, ts)
 	case config.Impersonation != nil:
-		gcpClient := motmedelGcp.NewClient()
+		gcpClient := altshiftGcp.NewClient()
 		signer, err := gcpClient.FindDefaultCredentials(
 			context.Background(),
 			[]string{"https://www.googleapis.com/auth/cloud-platform"},
@@ -270,7 +270,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		}
 		tokenSource = ts
 	default:
-		gcpClient := motmedelGcp.NewClient()
+		gcpClient := altshiftGcp.NewClient()
 		ts, err := gcpClient.FindDefaultCredentials(
 			context.Background(),
 			[]string{
@@ -306,7 +306,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		driveClient:          drive.NewClient(drive_config.WithSupportsAllDrives(true)),
 		fetchOption: fetch_config.WithHttpClient(
 			&http.Client{
-				Transport: &motmedelOauth2Transport.Transport{Source: tokenSource},
+				Transport: &altshiftOauth2Transport.Transport{Source: tokenSource},
 			},
 		),
 	}

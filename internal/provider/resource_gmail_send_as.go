@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/gmail/types/send_as"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/gmail"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/gmail/types/send_as"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

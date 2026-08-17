@@ -9,16 +9,16 @@ import (
 	"sort"
 	"strings"
 
-	motmedelErrors "github.com/Motmedel/utils_go/pkg/errors"
-	motmedelHttpContext "github.com/Motmedel/utils_go/pkg/http/context"
-	motmedelHttpTypes "github.com/Motmedel/utils_go/pkg/http/types"
+	altshiftErrors "github.com/altshiftab/utils_go/pkg/errors"
+	altshiftHttpContext "github.com/altshiftab/utils_go/pkg/http/context"
+	altshiftHttpTypes "github.com/altshiftab/utils_go/pkg/http/types"
 )
 
 // httpContextFromError walks the error chain for the HTTP context that the
-// Motmedel fetch helpers attach to errors. It carries the request and response
+// altshift fetch helpers attach to errors. It carries the request and response
 // along with their bodies, which the API call sites otherwise discard.
-func httpContextFromError(err error) *motmedelHttpTypes.HttpContext {
-	var contextErr motmedelErrors.ContextErrorI
+func httpContextFromError(err error) *altshiftHttpTypes.HttpContext {
+	var contextErr altshiftErrors.ContextErrorI
 	if !errors.As(err, &contextErr) {
 		return nil
 	}
@@ -28,7 +28,7 @@ func httpContextFromError(err error) *motmedelHttpTypes.HttpContext {
 		return nil
 	}
 
-	httpContext, _ := (*ctxPtr).Value(motmedelHttpContext.HttpContextContextKey).(*motmedelHttpTypes.HttpContext)
+	httpContext, _ := (*ctxPtr).Value(altshiftHttpContext.HttpContextContextKey).(*altshiftHttpTypes.HttpContext)
 	return httpContext
 }
 

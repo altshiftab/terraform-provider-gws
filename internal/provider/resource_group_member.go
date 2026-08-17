@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory"
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/directory/types/member"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory/types/member"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,7 +23,7 @@ var (
 
 type groupMemberResourceModel struct {
 	Id               types.String `tfsdk:"id"`
-	GroupKey          types.String `tfsdk:"group_key"`
+	GroupKey         types.String `tfsdk:"group_key"`
 	Email            types.String `tfsdk:"email"`
 	Role             types.String `tfsdk:"role"`
 	Type             types.String `tfsdk:"type"`

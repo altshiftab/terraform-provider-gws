@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/altshift/terraform-provider-gws/internal/provider"
-	gcpUtilsLogger "github.com/altshiftab/gcp_utils/pkg/types/logger"
-	"github.com/altshiftab/gcp_utils/pkg/types/logger/logger_config"
+	altshiftHttpLogger "github.com/altshiftab/utils_go/pkg/log/http_logger"
+	"github.com/altshiftab/utils_go/pkg/log/http_logger/http_logger_config"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -21,10 +21,9 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	// TODO: Fix the logger.
-	logger := gcpUtilsLogger.New(
-		logger_config.WithLogLevel(slog.LevelDebug),
-		logger_config.WithWriter(os.Stderr),
+	logger := altshiftHttpLogger.New(
+		http_logger_config.WithLogLevel(slog.LevelDebug),
+		http_logger_config.WithWriter(os.Stderr),
 	)
 	slog.SetDefault(logger.Logger)
 

@@ -3,7 +3,7 @@ package provider
 import (
 	"testing"
 
-	"github.com/Motmedel/utils_go/pkg/cloud/gws/drive/types/permission"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/drive/types/permission"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
