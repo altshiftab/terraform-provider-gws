@@ -32,10 +32,9 @@ import (
 
 const googleTokenURL = "https://oauth2.googleapis.com/token"
 
-// defaultScopes covers every resource the provider offers. A configuration that
-// uses only some of them may ask for less, which is worth doing: domain-wide
-// delegation authorises a service account for an exact set of scopes, so what is
-// asked for here is the measure of what that account is able to do.
+// defaultScopes covers every resource the provider offers. It is what the paths
+// that do not name their own scopes ask for; the impersonation block requires
+// them to be named.
 var defaultScopes = []string{
 	"https://www.googleapis.com/auth/admin.directory.user",
 	"https://www.googleapis.com/auth/admin.directory.group",
@@ -46,15 +45,19 @@ var defaultScopes = []string{
 	drive.ScopeDrive,
 }
 
-// resolveScopes returns what the configuration asks for, or the defaults when it
-// does not ask. An empty list is refused rather than passed on: the delegation
-// cannot issue a token for no scopes, and quietly substituting the defaults
-// would grant more than was asked for.
+// resolveScopes returns the scopes the configuration asks for. There is no
+// default to fall back on: with domain-wide delegation the set requested is the
+// measure of what the account may do, so leaving it unsaid would decide the
+// blast radius by omission rather than by intent.
 func resolveScopes(ctx context.Context, configured types.List) ([]string, diag.Diagnostics) {
 	diagnostics := diag.Diagnostics{}
 
 	if configured.IsNull() || configured.IsUnknown() {
-		return defaultScopes, diagnostics
+		diagnostics.AddError(
+			"Scopes not known",
+			"`scopes` must be set to a known list of OAuth scopes.",
+		)
+		return nil, diagnostics
 	}
 
 	var scopes []string
@@ -182,8 +185,8 @@ func (p *gwsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 					},
 					"scopes": schema.ListAttribute{
 						ElementType: types.StringType,
-						Optional:    true,
-						Description: "OAuth scopes to request. Defaults to every scope the provider's resources need. Domain-wide delegation authorises a service account for an exact set, so each scope named here must also be granted to it in the Admin console, or the token request is refused. Narrowing this is how a configuration that only reads is given an account that can only read.",
+						Required:    true,
+						Description: "OAuth scopes to request. Domain-wide delegation authorises a service account for an exact set, so this is the measure of what the account is able to do, and it is named rather than defaulted: a configuration that says nothing would otherwise be granted everything any resource might want. Each scope here must also be granted to the account in the Admin console, or the token request is refused.",
 					},
 				},
 			},

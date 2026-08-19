@@ -20,14 +20,22 @@ func TestResolveScopes(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name:       "unset asks for the defaults",
-			configured: types.ListNull(types.StringType),
-			want:       defaultScopes,
+			name: "the full set is asked for as given",
+			configured: types.ListValueMust(
+				types.StringType,
+				[]attr.Value{types.StringValue(defaultScopes[0])},
+			),
+			want: []string{defaultScopes[0]},
 		},
 		{
-			name:       "unknown asks for the defaults",
+			name:       "unset is refused rather than defaulted",
+			configured: types.ListNull(types.StringType),
+			wantErr:    true,
+		},
+		{
+			name:       "unknown is refused",
 			configured: types.ListUnknown(types.StringType),
-			want:       defaultScopes,
+			wantErr:    true,
 		},
 		{
 			name: "a narrower set is asked for as given",
