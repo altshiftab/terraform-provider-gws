@@ -23,6 +23,7 @@ import (
 	altshiftOauth2Transport "github.com/altshiftab/utils_go/pkg/oauth2/types/transport"
 	"github.com/altshiftab/utils_go/pkg/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -30,6 +31,48 @@ import (
 )
 
 const googleTokenURL = "https://oauth2.googleapis.com/token"
+
+// defaultScopes covers every resource the provider offers. A configuration that
+// uses only some of them may ask for less, which is worth doing: domain-wide
+// delegation authorises a service account for an exact set of scopes, so what is
+// asked for here is the measure of what that account is able to do.
+var defaultScopes = []string{
+	"https://www.googleapis.com/auth/admin.directory.user",
+	"https://www.googleapis.com/auth/admin.directory.group",
+	"https://www.googleapis.com/auth/admin.directory.group.member",
+	"https://www.googleapis.com/auth/apps.groups.settings",
+	"https://www.googleapis.com/auth/gmail.settings.basic",
+	"https://www.googleapis.com/auth/gmail.settings.sharing",
+	drive.ScopeDrive,
+}
+
+// resolveScopes returns what the configuration asks for, or the defaults when it
+// does not ask. An empty list is refused rather than passed on: the delegation
+// cannot issue a token for no scopes, and quietly substituting the defaults
+// would grant more than was asked for.
+func resolveScopes(ctx context.Context, configured types.List) ([]string, diag.Diagnostics) {
+	diagnostics := diag.Diagnostics{}
+
+	if configured.IsNull() || configured.IsUnknown() {
+		return defaultScopes, diagnostics
+	}
+
+	var scopes []string
+	diagnostics.Append(configured.ElementsAs(ctx, &scopes, false)...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
+	}
+
+	if len(scopes) == 0 {
+		diagnostics.AddError(
+			"No scopes requested",
+			"`scopes` was set to an empty list. Omit the attribute to request the provider's defaults.",
+		)
+		return nil, diagnostics
+	}
+
+	return scopes, diagnostics
+}
 
 var _ provider.Provider = &gwsProvider{}
 
@@ -48,6 +91,7 @@ type gwsProviderServiceAccountModel struct {
 type gwsProviderImpersonationModel struct {
 	ServiceAccount types.String `tfsdk:"service_account"`
 	Subject        types.String `tfsdk:"subject"`
+	Scopes         types.List   `tfsdk:"scopes"`
 }
 
 type gwsProviderModel struct {
@@ -136,6 +180,11 @@ func (p *gwsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 						Required:    true,
 						Description: "Email address of the user to impersonate (the mailbox to act on).",
 					},
+					"scopes": schema.ListAttribute{
+						ElementType: types.StringType,
+						Optional:    true,
+						Description: "OAuth scopes to request. Defaults to every scope the provider's resources need. Domain-wide delegation authorises a service account for an exact set, so each scope named here must also be granted to it in the Admin console, or the token request is refused. Narrowing this is how a configuration that only reads is given an account that can only read.",
+					},
 				},
 			},
 		},
@@ -199,15 +248,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			context.Background(),
 			googleTokenURL,
 			&credentialsFile,
-			[]string{
-				"https://www.googleapis.com/auth/admin.directory.user",
-				"https://www.googleapis.com/auth/admin.directory.group",
-				"https://www.googleapis.com/auth/admin.directory.group.member",
-				"https://www.googleapis.com/auth/apps.groups.settings",
-				"https://www.googleapis.com/auth/gmail.settings.basic",
-				"https://www.googleapis.com/auth/gmail.settings.sharing",
-				drive.ScopeDrive,
-			},
+			defaultScopes,
 			config.ServiceAccount.Subject.ValueString(),
 		)
 		if err != nil {
@@ -226,6 +267,12 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		}
 		tokenSource = token_source.NewReusable(nil, ts)
 	case config.Impersonation != nil:
+		scopes, scopeDiagnostics := resolveScopes(ctx, config.Impersonation.Scopes)
+		resp.Diagnostics.Append(scopeDiagnostics...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		gcpClient := altshiftGcp.NewClient()
 		signer, err := gcpClient.FindDefaultCredentials(
 			context.Background(),
@@ -250,15 +297,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			signer,
 			config.Impersonation.ServiceAccount.ValueString(),
 			config.Impersonation.Subject.ValueString(),
-			[]string{
-				"https://www.googleapis.com/auth/admin.directory.user",
-				"https://www.googleapis.com/auth/admin.directory.group",
-				"https://www.googleapis.com/auth/admin.directory.group.member",
-				"https://www.googleapis.com/auth/apps.groups.settings",
-				"https://www.googleapis.com/auth/gmail.settings.basic",
-				"https://www.googleapis.com/auth/gmail.settings.sharing",
-				drive.ScopeDrive,
-			},
+			scopes,
 			googleTokenURL,
 		)
 		if err != nil {
