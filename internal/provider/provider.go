@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"net/http"
+	"time"
 
 	altshiftGcp "github.com/altshiftab/utils_go/pkg/cloud/gcp"
 	"github.com/altshiftab/utils_go/pkg/cloud/gcp/types/credentials_file"
@@ -16,6 +17,7 @@ import (
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/gmail"
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/groups_settings"
 	"github.com/altshiftab/utils_go/pkg/http/types/fetch_config"
+	"github.com/altshiftab/utils_go/pkg/http/types/fetch_config/retry_config"
 	oauth2Config "github.com/altshiftab/utils_go/pkg/oauth2/types/config"
 	"github.com/altshiftab/utils_go/pkg/oauth2/types/endpoint"
 	"github.com/altshiftab/utils_go/pkg/oauth2/types/token"
@@ -401,6 +403,24 @@ func getProviderData(providerData any, resp interface{ AddError(string, string) 
 	return data
 }
 
+// retryConfig is what every call this provider makes is retried under.
+//
+// The Workspace APIs, and the Groups Settings API above all, answer 503 often
+// enough that a single attempt is not a fair test of whether a thing worked. A
+// read that fails is not a read that is wrong: Terraform refreshes before it
+// plans, so a transient failure on a resource nobody is changing aborts an
+// apply that was about to change something else entirely.
+//
+// The default checker already retries 429, every 5xx, and a request that never
+// got an answer. What is set here is patience: more than the default two
+// attempts, and a ceiling so that a service which is genuinely down fails in
+// good time rather than holding an apply open.
+var retryConfig = retry_config.New(
+	retry_config.WithCount(4),
+	retry_config.WithBaseDelay(time.Second),
+	retry_config.WithMaximumWaitTime(30*time.Second),
+)
+
 func fetchOptions(data *gwsProviderData) []fetch_config.Option {
-	return []fetch_config.Option{data.fetchOption}
+	return []fetch_config.Option{data.fetchOption, fetch_config.WithRetryConfig(retryConfig)}
 }
