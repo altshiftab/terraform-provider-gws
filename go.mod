@@ -1,9 +1,9 @@
 module github.com/altshift/terraform-provider-gws
 
-go 1.26
+go 1.27
 
 require (
-	github.com/altshiftab/utils_go v1.31.0
+	github.com/altshiftab/utils_go v1.37.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
 )
 
