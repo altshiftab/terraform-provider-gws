@@ -22,8 +22,7 @@ from a local machine.
 git commit -am "..."
 git tag -a vX.Y.Z -m vX.Y.Z
 
-# 2. Build + sign artifacts into dist/ (build env requires GOEXPERIMENT=jsonv2,
-#    which .goreleaser.yml sets).
+# 2. Build + sign artifacts into dist/.
 GPG_FINGERPRINT=F3FA05768865F190FBB0EF51888CD0428F90299C \
   goreleaser release --clean --skip=publish
 

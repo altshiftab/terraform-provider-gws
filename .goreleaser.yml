@@ -19,8 +19,6 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
-      # Matches the local Makefile build: the provider needs encoding/json/v2.
-      - GOEXPERIMENT=jsonv2
     mod_timestamp: '{{ .CommitTimestamp }}'
     flags:
       - -trimpath
