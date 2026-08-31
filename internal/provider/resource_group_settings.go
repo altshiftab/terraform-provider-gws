@@ -268,6 +268,11 @@ func (r *groupSettingsResource) Read(ctx context.Context, req resource.ReadReque
 
 	apiSettings, err := r.client.Get(ctx, groupEmail, fetchOptions(r.providerData)...)
 	if err != nil {
+		if isNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading group settings",
 			fmt.Sprintf("Could not read settings for group %s: %s", groupEmail, apiErrorDetail(err)),

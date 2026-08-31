@@ -32,6 +32,20 @@ func httpContextFromError(err error) *altshiftHttpTypes.HttpContext {
 	return httpContext
 }
 
+// isNotFound reports whether err came from a 404 response. The fetch helpers
+// surface every non-2xx status as an error, so a resource that no longer exists
+// arrives here as a failure rather than as an empty result — without this, a
+// Read of something deleted out of band fails the whole plan instead of
+// planning the resource back.
+func isNotFound(err error) bool {
+	httpContext := httpContextFromError(err)
+	if httpContext == nil || httpContext.Response == nil {
+		return false
+	}
+
+	return httpContext.Response.StatusCode == http.StatusNotFound
+}
+
 // apiErrorDetail renders err for a Terraform diagnostic. When the error carries
 // an HTTP context it appends the response as a raw HTTP dump (status line,
 // headers, then body), which for the Google APIs is a JSON document describing

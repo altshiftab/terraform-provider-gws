@@ -153,6 +153,11 @@ func (r *gmailSendAsResource) Read(ctx context.Context, req resource.ReadRequest
 
 	apiSendAs, err := r.client.GetSendAs(ctx, userId, sendAsEmail, fetchOptions(r.providerData)...)
 	if err != nil {
+		if isNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading Gmail send-as alias",
 			fmt.Sprintf("Could not read send-as alias %s for user %s: %s", sendAsEmail, userId, apiErrorDetail(err)),

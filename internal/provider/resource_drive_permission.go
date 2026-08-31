@@ -176,6 +176,11 @@ func (r *drivePermissionResource) Read(ctx context.Context, req resource.ReadReq
 
 	apiPermission, err := r.client.GetPermission(ctx, fileId, permissionId, fetchOptions(r.providerData)...)
 	if err != nil {
+		if isNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading Drive permission",
 			fmt.Sprintf("Could not read permission %s on file %s: %s", permissionId, fileId, apiErrorDetail(err)),

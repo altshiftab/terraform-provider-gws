@@ -7,6 +7,7 @@ import (
 
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory"
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory/types/member"
+	altshiftErrors "github.com/altshiftab/utils_go/pkg/errors"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -141,6 +142,17 @@ func (r *groupMemberResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	// members.insert omits the member ID for an address outside the Workspace
+	// domain, and Read cannot fall back to the email for such a member, since
+	// members.get returns 404 for it. Take the ID from the member list instead.
+	// Failing to is not worth aborting a membership that was created: Read
+	// resolves the ID the same way, so state repairs itself on the next refresh.
+	if createdMember != nil && createdMember.Id == "" {
+		if listed, listErr := r.findMember(ctx, groupKey, createdMember.Email); listErr == nil && listed != nil {
+			createdMember.Id = listed.Id
+		}
+	}
+
 	mapMemberToState(createdMember, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
@@ -153,20 +165,37 @@ func (r *groupMemberResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	groupKey := state.GroupKey.ValueString()
+	email := state.Email.ValueString()
 	// Prefer the member ID: members.get returns 404 by email for external members
 	// (a different domain), but always resolves by the stable member ID.
 	memberKey := state.Id.ValueString()
 	if memberKey == "" {
-		memberKey = state.Email.ValueString()
+		memberKey = email
 	}
 
 	apiMember, err := r.client.GetMember(ctx, groupKey, memberKey, fetchOptions(r.providerData)...)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading group member",
-			fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
-		)
-		return
+		if !isNotFound(err) {
+			resp.Diagnostics.AddError(
+				"Error reading group member",
+				fmt.Sprintf("Could not read member %s in group %s: %s", memberKey, groupKey, apiErrorDetail(err)),
+			)
+			return
+		}
+
+		// A 404 does not settle it. The lookup key may be an email that
+		// members.get refuses to resolve because the member is external, and an ID
+		// can go stale when a membership is recreated out of band. The member list
+		// answers both cases, and mapping its result back into state records the
+		// ID that later reads need.
+		apiMember, err = r.findMember(ctx, groupKey, email)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error reading group member",
+				fmt.Sprintf("Could not read member %s in group %s: %s", email, groupKey, apiErrorDetail(err)),
+			)
+			return
+		}
 	}
 
 	if apiMember == nil {
@@ -250,7 +279,7 @@ func (r *groupMemberResource) ImportState(ctx context.Context, req resource.Impo
 	// members.get returns 404 by email for external members (a different domain),
 	// so resolve the member via the member list and key state on the stable member
 	// ID. memberKey may be an email or an ID.
-	members, err := r.client.ListMembers(ctx, groupKey, fetchOptions(r.providerData)...)
+	match, err := r.findMember(ctx, groupKey, memberKey)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error listing group members for import",
@@ -259,13 +288,6 @@ func (r *groupMemberResource) ImportState(ctx context.Context, req resource.Impo
 		return
 	}
 
-	var match *member.Member
-	for _, m := range members {
-		if m.Id == memberKey || strings.EqualFold(m.Email, memberKey) {
-			match = m
-			break
-		}
-	}
 	if match == nil {
 		resp.Diagnostics.AddError(
 			"Group member not found",
@@ -277,6 +299,28 @@ func (r *groupMemberResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("group_key"), groupKey)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("email"), match.Email)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), match.Id)...)
+}
+
+// findMember locates a member of a group by ID or email address through the
+// member list, the one lookup that works for every member: members.get resolves
+// an external member by ID alone, and members.insert does not report that ID.
+// A member the group does not have is reported as a nil member and no error.
+func (r *groupMemberResource) findMember(ctx context.Context, groupKey string, memberKey string) (*member.Member, error) {
+	members, err := r.client.ListMembers(ctx, groupKey, fetchOptions(r.providerData)...)
+	if err != nil {
+		return nil, altshiftErrors.New(fmt.Errorf("list members: %w", err), groupKey)
+	}
+
+	for _, m := range members {
+		if m == nil {
+			continue
+		}
+		if m.Id == memberKey || strings.EqualFold(m.Email, memberKey) {
+			return m, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func mapMemberToState(m *member.Member, state *groupMemberResourceModel) {

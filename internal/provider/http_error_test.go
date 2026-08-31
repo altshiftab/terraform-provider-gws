@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +13,10 @@ import (
 	altshiftHttpErrors "github.com/altshiftab/utils_go/pkg/http/errors"
 	altshiftHttpTypes "github.com/altshiftab/utils_go/pkg/http/types"
 )
+
+// errTransport stands for a failure that never reached a response, and so
+// carries no HTTP context to read a status from.
+var errTransport = errors.New("dial tcp: connection refused")
 
 // fetchLikeError reproduces the error chain the altshift fetch helpers build for
 // a non-2xx response: the innermost error carries the HTTP context, and the
@@ -46,6 +51,43 @@ func TestApiErrorDetailIncludesResponse(t *testing.T) {
 		if !strings.Contains(detail, want) {
 			t.Errorf("apiErrorDetail() = %q, missing %q", detail, want)
 		}
+	}
+}
+
+func TestIsNotFound(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "a 404 is a missing resource",
+			err:  fetchLikeError("404 Not Found", http.StatusNotFound, nil, `{"error":{"code":404}}`),
+			want: true,
+		},
+		{
+			name: "another status is not",
+			err:  fetchLikeError("403 Forbidden", http.StatusForbidden, nil, `{"error":{"code":403}}`),
+		},
+		{
+			name: "an error carrying no response is not",
+			err:  errTransport,
+		},
+		{
+			name: "no error is not",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := isNotFound(testCase.err); got != testCase.want {
+				t.Errorf("isNotFound() = %v, want %v", got, testCase.want)
+			}
+		})
 	}
 }
 

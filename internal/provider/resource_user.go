@@ -298,6 +298,11 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	apiUser, err := r.client.GetUser(ctx, userKey, fetchOptions(r.providerData)...)
 	if err != nil {
+		if isNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading user",
 			fmt.Sprintf("Could not read user %s: %s", userKey, apiErrorDetail(err)),

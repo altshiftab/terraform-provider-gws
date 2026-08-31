@@ -201,6 +201,11 @@ func (r *gmailFilterResource) Read(ctx context.Context, req resource.ReadRequest
 
 	apiFilter, err := r.client.GetFilter(ctx, userId, filterId, fetchOptions(r.providerData)...)
 	if err != nil {
+		if isNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading Gmail filter",
 			fmt.Sprintf("Could not read filter %s for user %s: %s", filterId, userId, apiErrorDetail(err)),
