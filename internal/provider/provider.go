@@ -367,6 +367,7 @@ func (p *gwsProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewGroupSettingsResource,
 		NewGmailSendAsResource,
 		NewGmailFilterResource,
+		NewGmailForwardingAddressResource,
 		NewDrivePermissionResource,
 	}
 }
@@ -382,6 +383,7 @@ func (p *gwsProvider) DataSources(_ context.Context) []func() datasource.DataSou
 		NewGroupSettingsDataSource,
 		NewGmailSendAsDataSource,
 		NewGmailFilterDataSource,
+		NewGmailForwardingAddressDataSource,
 		NewDrivePermissionDataSource,
 	}
 }

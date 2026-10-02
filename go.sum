@@ -1,5 +1,5 @@
-github.com/altshiftab/utils_go v1.37.0 h1:OLxFN0B8C7N0gHeKNc2ebTj0ULcZrzLonEEgbfEkWGw=
-github.com/altshiftab/utils_go v1.37.0/go.mod h1:lNBqVAWMIhIISNz0pOQnsqRsCPg6S50Q62GH6slGBOk=
+github.com/altshiftab/utils_go v1.75.0 h1:fleVtQ5BL2hjA0tJod9vel8R43TdgSbtn2PwWmrx6UI=
+github.com/altshiftab/utils_go v1.75.0/go.mod h1:lNBqVAWMIhIISNz0pOQnsqRsCPg6S50Q62GH6slGBOk=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
