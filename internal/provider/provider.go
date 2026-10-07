@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	altshiftGcp "github.com/altshiftab/utils_go/pkg/cloud/gcp"
@@ -33,6 +34,34 @@ import (
 )
 
 const googleTokenURL = "https://oauth2.googleapis.com/token"
+
+// accessTokenEnvironmentVariable names an access token that signs the
+// impersonation assertions in place of Application Default Credentials. It is
+// the variable the google provider reads for the same purpose, so one token,
+// minted by a wrapper around the whole run, serves both providers.
+const accessTokenEnvironmentVariable = "GOOGLE_OAUTH_ACCESS_TOKEN" //nolint:gosec // the name of a variable, not a credential
+
+// impersonationSigner returns the credential that calls signJwt on the
+// delegating service account: accessToken when one is given, and otherwise what
+// findDefaultCredentials -- Application Default Credentials -- finds. The token
+// is used as it is and never refreshed; whoever minted it decides how long a run
+// may last.
+func impersonationSigner(
+	ctx context.Context,
+	accessToken string,
+	findDefaultCredentials func(context.Context, []string, ...fetch_config.Option) (token_source.TokenSource, error),
+) (token_source.TokenSource, error) {
+	if accessToken != "" {
+		return token_source.NewStatic(&token.Token{AccessToken: accessToken, TokenType: "Bearer"}), nil
+	}
+
+	signer, err := findDefaultCredentials(ctx, []string{"https://www.googleapis.com/auth/cloud-platform"})
+	if err != nil {
+		return nil, fmt.Errorf("find default credentials: %w", err)
+	}
+
+	return signer, nil
+}
 
 // defaultScopes covers every resource the provider offers. It is what the paths
 // that do not name their own scopes ask for; the impersonation block requires
@@ -175,7 +204,7 @@ func (p *gwsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 			},
 			"impersonation": schema.SingleNestedAttribute{
 				Optional:    true,
-				Description: "Keyless Google Workspace domain-wide delegation. The provider's Application Default Credentials impersonate `service_account` (via IAM signJwt) to act as `subject` — no key is used. The ADC identity needs roles/iam.serviceAccountTokenCreator on the service account, and iamcredentials.googleapis.com must be enabled. Mutually exclusive with `oauth2` and `service_account`.",
+				Description: "Keyless Google Workspace domain-wide delegation. The provider's Application Default Credentials impersonate `service_account` (via IAM signJwt) to act as `subject` — no key is used. An access token in `GOOGLE_OAUTH_ACCESS_TOKEN`, the variable the google provider reads, is used in place of ADC when set. Whichever identity signs needs roles/iam.serviceAccountTokenCreator on the service account, and iamcredentials.googleapis.com must be enabled. Mutually exclusive with `oauth2` and `service_account`.",
 				Attributes: map[string]schema.Attribute{
 					"service_account": schema.StringAttribute{
 						Required:    true,
@@ -278,10 +307,10 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			return
 		}
 
-		gcpClient := altshiftGcp.NewClient()
-		signer, err := gcpClient.FindDefaultCredentials(
+		signer, err := impersonationSigner(
 			context.Background(),
-			[]string{"https://www.googleapis.com/auth/cloud-platform"},
+			os.Getenv(accessTokenEnvironmentVariable),
+			altshiftGcp.NewClient().FindDefaultCredentials,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
