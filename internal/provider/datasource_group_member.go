@@ -37,41 +37,50 @@ func (d *groupMemberDataSource) Metadata(_ context.Context, req datasource.Metad
 }
 
 func (d *groupMemberDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	attributes := groupMemberDataSourceAttributes(true)
+	attributes["group_key"] = schema.StringAttribute{
+		Required:    true,
+		Description: "The group's email address or unique ID.",
+	}
+
 	resp.Schema = schema.Schema{
 		Description: "Fetches a member of a Google Workspace group.",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The unique ID of the group member.",
-			},
-			"group_key": schema.StringAttribute{
-				Required:    true,
-				Description: "The group's email address or unique ID.",
-			},
-			"email": schema.StringAttribute{
-				Required:    true,
-				Description: "The member's email address.",
-			},
-			"role": schema.StringAttribute{
-				Computed:    true,
-				Description: "The member's role in the group. OWNER, MANAGER, or MEMBER.",
-			},
-			"type": schema.StringAttribute{
-				Computed:    true,
-				Description: "The type of group member (USER, GROUP, etc.).",
-			},
-			"delivery_settings": schema.StringAttribute{
-				Computed:    true,
-				Description: "Delivery settings for the member. ALL_MAIL, DAILY, DIGEST, DISABLED, or NONE.",
-			},
-			"etag": schema.StringAttribute{
-				Computed:    true,
-				Description: "ETag of the resource.",
-			},
-			"status": schema.StringAttribute{
-				Computed:    true,
-				Description: "The status of the member.",
-			},
+		Attributes:  attributes,
+	}
+}
+
+// groupMemberDataSourceAttributes describes a member as both gws_group_member and the entries of gws_group_members
+// present one. gws_group_member looks the member up by email, which is then required; everything else is computed.
+func groupMemberDataSourceAttributes(emailRequired bool) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed:    true,
+			Description: "The unique ID of the group member.",
+		},
+		"email": schema.StringAttribute{
+			Required:    emailRequired,
+			Computed:    !emailRequired,
+			Description: "The member's email address.",
+		},
+		"role": schema.StringAttribute{
+			Computed:    true,
+			Description: "The member's role in the group. OWNER, MANAGER, or MEMBER.",
+		},
+		"type": schema.StringAttribute{
+			Computed:    true,
+			Description: "The type of group member (USER, GROUP, etc.).",
+		},
+		"delivery_settings": schema.StringAttribute{
+			Computed:    true,
+			Description: "Delivery settings for the member. ALL_MAIL, DAILY, DIGEST, DISABLED, or NONE.",
+		},
+		"etag": schema.StringAttribute{
+			Computed:    true,
+			Description: "ETag of the resource.",
+		},
+		"status": schema.StringAttribute{
+			Computed:    true,
+			Description: "The status of the member.",
 		},
 	}
 }

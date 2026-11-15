@@ -49,40 +49,9 @@ func (d *groupMembersDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				Description: "The group's email address or unique ID.",
 			},
 			"members": schema.ListNestedAttribute{
-				Computed:    true,
-				Description: "List of group members.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Computed:    true,
-							Description: "The unique ID of the group member.",
-						},
-						"email": schema.StringAttribute{
-							Computed:    true,
-							Description: "The member's email address.",
-						},
-						"role": schema.StringAttribute{
-							Computed:    true,
-							Description: "The member's role in the group. OWNER, MANAGER, or MEMBER.",
-						},
-						"type": schema.StringAttribute{
-							Computed:    true,
-							Description: "The type of group member (USER, GROUP, etc.).",
-						},
-						"status": schema.StringAttribute{
-							Computed:    true,
-							Description: "The status of the member.",
-						},
-						"etag": schema.StringAttribute{
-							Computed:    true,
-							Description: "ETag of the resource.",
-						},
-						"delivery_settings": schema.StringAttribute{
-							Computed:    true,
-							Description: "Delivery settings for the member. ALL_MAIL, DAILY, DIGEST, DISABLED, or NONE.",
-						},
-					},
-				},
+				Computed:     true,
+				Description:  "List of group members.",
+				NestedObject: schema.NestedAttributeObject{Attributes: groupMemberDataSourceAttributes(false)},
 			},
 		},
 	}

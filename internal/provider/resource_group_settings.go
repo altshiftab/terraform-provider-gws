@@ -17,7 +17,8 @@ var (
 	_ resource.ResourceWithImportState = &groupSettingsResource{}
 )
 
-type groupSettingsResourceModel struct {
+// groupSettingsModel is the state of gws_group_settings, and also what the data source of the same name reads.
+type groupSettingsModel struct {
 	GroupEmail types.String `tfsdk:"group_email"`
 
 	// Settings
@@ -233,7 +234,7 @@ func (r *groupSettingsResource) Configure(_ context.Context, req resource.Config
 }
 
 func (r *groupSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan groupSettingsResourceModel
+	var plan groupSettingsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -258,7 +259,7 @@ func (r *groupSettingsResource) Create(ctx context.Context, req resource.CreateR
 }
 
 func (r *groupSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state groupSettingsResourceModel
+	var state groupSettingsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -290,7 +291,7 @@ func (r *groupSettingsResource) Read(ctx context.Context, req resource.ReadReque
 }
 
 func (r *groupSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan groupSettingsResourceModel
+	var plan groupSettingsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -321,7 +322,7 @@ func (r *groupSettingsResource) ImportState(ctx context.Context, req resource.Im
 	resource.ImportStatePassthroughID(ctx, path.Root("group_email"), req, resp)
 }
 
-func buildGroupSettingsFromPlan(plan *groupSettingsResourceModel) *groupSettingsType.Group {
+func buildGroupSettingsFromPlan(plan *groupSettingsModel) *groupSettingsType.Group {
 	g := &groupSettingsType.Group{}
 
 	if !plan.WhoCanJoin.IsNull() && !plan.WhoCanJoin.IsUnknown() {
@@ -412,7 +413,7 @@ func buildGroupSettingsFromPlan(plan *groupSettingsResourceModel) *groupSettings
 	return g
 }
 
-func mapGroupSettingsToState(g *groupSettingsType.Group, state *groupSettingsResourceModel) {
+func mapGroupSettingsToState(g *groupSettingsType.Group, state *groupSettingsModel) {
 	if g == nil {
 		return
 	}

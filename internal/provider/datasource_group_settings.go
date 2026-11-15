@@ -7,50 +7,9 @@ import (
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/groups_settings"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ datasource.DataSource = &groupSettingsDataSource{}
-
-type groupSettingsDataSourceModel struct {
-	GroupEmail types.String `tfsdk:"group_email"`
-
-	WhoCanJoin           types.String `tfsdk:"who_can_join"`
-	WhoCanViewMembership types.String `tfsdk:"who_can_view_membership"`
-	WhoCanViewGroup      types.String `tfsdk:"who_can_view_group"`
-	WhoCanPostMessage    types.String `tfsdk:"who_can_post_message"`
-	WhoCanLeaveGroup     types.String `tfsdk:"who_can_leave_group"`
-	WhoCanContactOwner   types.String `tfsdk:"who_can_contact_owner"`
-	WhoCanDiscoverGroup  types.String `tfsdk:"who_can_discover_group"`
-
-	AllowExternalMembers types.String `tfsdk:"allow_external_members"`
-	AllowWebPosting      types.String `tfsdk:"allow_web_posting"`
-	PrimaryLanguage      types.String `tfsdk:"primary_language"`
-
-	IsArchived  types.String `tfsdk:"is_archived"`
-	ArchiveOnly types.String `tfsdk:"archive_only"`
-
-	MessageModerationLevel types.String `tfsdk:"message_moderation_level"`
-	SpamModerationLevel    types.String `tfsdk:"spam_moderation_level"`
-
-	ReplyTo                            types.String `tfsdk:"reply_to"`
-	CustomReplyTo                      types.String `tfsdk:"custom_reply_to"`
-	IncludeCustomFooter                types.String `tfsdk:"include_custom_footer"`
-	CustomFooterText                   types.String `tfsdk:"custom_footer_text"`
-	SendMessageDenyNotification        types.String `tfsdk:"send_message_deny_notification"`
-	DefaultMessageDenyNotificationText types.String `tfsdk:"default_message_deny_notification_text"`
-
-	MembersCanPostAsTheGroup   types.String `tfsdk:"members_can_post_as_the_group"`
-	IncludeInGlobalAddressList types.String `tfsdk:"include_in_global_address_list"`
-	FavoriteRepliesOnTop       types.String `tfsdk:"favorite_replies_on_top"`
-
-	WhoCanModerateMembers types.String `tfsdk:"who_can_moderate_members"`
-	WhoCanModerateContent types.String `tfsdk:"who_can_moderate_content"`
-	WhoCanAssistContent   types.String `tfsdk:"who_can_assist_content"`
-
-	EnableCollaborativeInbox types.String `tfsdk:"enable_collaborative_inbox"`
-	DefaultSender            types.String `tfsdk:"default_sender"`
-}
 
 type groupSettingsDataSource struct {
 	client       *groups_settings.Client
@@ -208,7 +167,7 @@ func (d *groupSettingsDataSource) Configure(_ context.Context, req datasource.Co
 }
 
 func (d *groupSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var config groupSettingsDataSourceModel
+	var config groupSettingsModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -233,38 +192,6 @@ func (d *groupSettingsDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	if apiSettings.Email != "" {
-		config.GroupEmail = types.StringValue(apiSettings.Email)
-	}
-
-	config.WhoCanJoin = types.StringValue(apiSettings.WhoCanJoin)
-	config.WhoCanViewMembership = types.StringValue(apiSettings.WhoCanViewMembership)
-	config.WhoCanViewGroup = types.StringValue(apiSettings.WhoCanViewGroup)
-	config.WhoCanPostMessage = types.StringValue(apiSettings.WhoCanPostMessage)
-	config.WhoCanLeaveGroup = types.StringValue(apiSettings.WhoCanLeaveGroup)
-	config.WhoCanContactOwner = types.StringValue(apiSettings.WhoCanContactOwner)
-	config.WhoCanDiscoverGroup = types.StringValue(apiSettings.WhoCanDiscoverGroup)
-	config.AllowExternalMembers = types.StringValue(apiSettings.AllowExternalMembers)
-	config.AllowWebPosting = types.StringValue(apiSettings.AllowWebPosting)
-	config.PrimaryLanguage = types.StringValue(apiSettings.PrimaryLanguage)
-	config.IsArchived = types.StringValue(apiSettings.IsArchived)
-	config.ArchiveOnly = types.StringValue(apiSettings.ArchiveOnly)
-	config.MessageModerationLevel = types.StringValue(apiSettings.MessageModerationLevel)
-	config.SpamModerationLevel = types.StringValue(apiSettings.SpamModerationLevel)
-	config.ReplyTo = types.StringValue(apiSettings.ReplyTo)
-	config.CustomReplyTo = types.StringValue(apiSettings.CustomReplyTo)
-	config.IncludeCustomFooter = types.StringValue(apiSettings.IncludeCustomFooter)
-	config.CustomFooterText = types.StringValue(apiSettings.CustomFooterText)
-	config.SendMessageDenyNotification = types.StringValue(apiSettings.SendMessageDenyNotification)
-	config.DefaultMessageDenyNotificationText = types.StringValue(apiSettings.DefaultMessageDenyNotificationText)
-	config.MembersCanPostAsTheGroup = types.StringValue(apiSettings.MembersCanPostAsTheGroup)
-	config.IncludeInGlobalAddressList = types.StringValue(apiSettings.IncludeInGlobalAddressList)
-	config.FavoriteRepliesOnTop = types.StringValue(apiSettings.FavoriteRepliesOnTop)
-	config.WhoCanModerateMembers = types.StringValue(apiSettings.WhoCanModerateMembers)
-	config.WhoCanModerateContent = types.StringValue(apiSettings.WhoCanModerateContent)
-	config.WhoCanAssistContent = types.StringValue(apiSettings.WhoCanAssistContent)
-	config.EnableCollaborativeInbox = types.StringValue(apiSettings.EnableCollaborativeInbox)
-	config.DefaultSender = types.StringValue(apiSettings.DefaultSender)
-
+	mapGroupSettingsToState(apiSettings, &config)
 	resp.Diagnostics.Append(resp.State.Set(ctx, config)...)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory"
+	"github.com/altshiftab/utils_go/pkg/cloud/gws/directory/types/user"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -55,103 +56,110 @@ func (d *userDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 func (d *userDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Fetches a Google Workspace user.",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The unique ID for the user.",
-			},
-			"primary_email": schema.StringAttribute{
-				Required:    true,
-				Description: "The user's primary email address.",
-			},
-			"given_name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The user's first name.",
-			},
-			"family_name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The user's last name.",
-			},
-			"full_name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The user's full name.",
-			},
-			"is_admin": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user has super administrator privileges.",
-			},
-			"is_delegated_admin": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user is a delegated administrator.",
-			},
-			"agreed_to_terms": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user has agreed to the terms of service.",
-			},
-			"suspended": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user is suspended.",
-			},
-			"archived": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user is archived.",
-			},
-			"change_password_at_next_login": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user must change their password at next login.",
-			},
-			"ip_whitelisted": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user's IP address is whitelisted.",
-			},
-			"is_mailbox_setup": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user's Google mailbox is set up.",
-			},
-			"is_enrolled_in_2sv": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user is enrolled in 2-step verification.",
-			},
-			"is_enforced_in_2sv": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether 2-step verification is enforced for the user.",
-			},
-			"include_in_global_address_list": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the user is included in the Global Address List.",
-			},
-			"customer_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The customer ID.",
-			},
-			"etag": schema.StringAttribute{
-				Computed:    true,
-				Description: "ETag of the resource.",
-			},
-			"org_unit_path": schema.StringAttribute{
-				Computed:    true,
-				Description: "The organizational unit path.",
-			},
-			"recovery_email": schema.StringAttribute{
-				Computed:    true,
-				Description: "The recovery email address.",
-			},
-			"recovery_phone": schema.StringAttribute{
-				Computed:    true,
-				Description: "The recovery phone number.",
-			},
-			"suspension_reason": schema.StringAttribute{
-				Computed:    true,
-				Description: "The reason the user account is suspended.",
-			},
-			"creation_time": schema.StringAttribute{
-				Computed:    true,
-				Description: "The time the user account was created.",
-			},
-			"last_login_time": schema.StringAttribute{
-				Computed:    true,
-				Description: "The last time the user logged in.",
-			},
+		Attributes:  userDataSourceAttributes(true),
+	}
+}
+
+// userDataSourceAttributes describes a user as both gws_user and the entries of gws_users present one. gws_user looks
+// the user up by primary_email, which is then required; everything else is computed.
+func userDataSourceAttributes(primaryEmailRequired bool) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed:    true,
+			Description: "The unique ID for the user.",
+		},
+		"primary_email": schema.StringAttribute{
+			Required:    primaryEmailRequired,
+			Computed:    !primaryEmailRequired,
+			Description: "The user's primary email address.",
+		},
+		"given_name": schema.StringAttribute{
+			Computed:    true,
+			Description: "The user's first name.",
+		},
+		"family_name": schema.StringAttribute{
+			Computed:    true,
+			Description: "The user's last name.",
+		},
+		"full_name": schema.StringAttribute{
+			Computed:    true,
+			Description: "The user's full name.",
+		},
+		"is_admin": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user has super administrator privileges.",
+		},
+		"is_delegated_admin": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user is a delegated administrator.",
+		},
+		"agreed_to_terms": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user has agreed to the terms of service.",
+		},
+		"suspended": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user is suspended.",
+		},
+		"archived": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user is archived.",
+		},
+		"change_password_at_next_login": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user must change their password at next login.",
+		},
+		"ip_whitelisted": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user's IP address is whitelisted.",
+		},
+		"is_mailbox_setup": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user's Google mailbox is set up.",
+		},
+		"is_enrolled_in_2sv": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user is enrolled in 2-step verification.",
+		},
+		"is_enforced_in_2sv": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether 2-step verification is enforced for the user.",
+		},
+		"include_in_global_address_list": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the user is included in the Global Address List.",
+		},
+		"customer_id": schema.StringAttribute{
+			Computed:    true,
+			Description: "The customer ID.",
+		},
+		"etag": schema.StringAttribute{
+			Computed:    true,
+			Description: "ETag of the resource.",
+		},
+		"org_unit_path": schema.StringAttribute{
+			Computed:    true,
+			Description: "The organizational unit path.",
+		},
+		"recovery_email": schema.StringAttribute{
+			Computed:    true,
+			Description: "The recovery email address.",
+		},
+		"recovery_phone": schema.StringAttribute{
+			Computed:    true,
+			Description: "The recovery phone number.",
+		},
+		"suspension_reason": schema.StringAttribute{
+			Computed:    true,
+			Description: "The reason the user account is suspended.",
+		},
+		"creation_time": schema.StringAttribute{
+			Computed:    true,
+			Description: "The time the user account was created.",
+		},
+		"last_login_time": schema.StringAttribute{
+			Computed:    true,
+			Description: "The last time the user logged in.",
 		},
 	}
 }
@@ -200,33 +208,44 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	config.Id = types.StringValue(apiUser.Id)
-	config.PrimaryEmail = types.StringValue(apiUser.PrimaryEmail)
-	config.CustomerId = types.StringValue(apiUser.CustomerId)
-	config.Etag = types.StringValue(apiUser.Etag)
-	config.IsAdmin = types.BoolValue(apiUser.IsAdmin)
-	config.IsDelegatedAdmin = types.BoolValue(apiUser.IsDelegatedAdmin)
-	config.AgreedToTerms = types.BoolValue(apiUser.AgreedToTerms)
-	config.Suspended = types.BoolValue(apiUser.Suspended)
-	config.Archived = types.BoolValue(apiUser.Archived)
-	config.IsMailboxSetup = types.BoolValue(apiUser.IsMailboxSetup)
-	config.ChangePasswordAtNextLogin = types.BoolValue(apiUser.ChangePasswordAtNextLogin)
-	config.IpWhitelisted = types.BoolValue(apiUser.IpWhitelisted)
-	config.IsEnrolledIn2Sv = types.BoolValue(apiUser.IsEnrolledIn2Sv)
-	config.IsEnforcedIn2Sv = types.BoolValue(apiUser.IsEnforcedIn2Sv)
-	config.IncludeInGlobalAddressList = types.BoolValue(apiUser.IncludeInGlobalAddressList)
-	config.SuspensionReason = types.StringValue(apiUser.SuspensionReason)
-	config.OrgUnitPath = types.StringValue(apiUser.OrgUnitPath)
-	config.RecoveryEmail = types.StringValue(apiUser.RecoveryEmail)
-	config.RecoveryPhone = types.StringValue(apiUser.RecoveryPhone)
-	config.LastLoginTime = types.StringValue(apiUser.LastLoginTime)
-	config.CreationTime = types.StringValue(apiUser.CreationTime)
+	state := newUserDataSourceModel(apiUser)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+}
 
-	if apiUser.Name != nil {
-		config.GivenName = types.StringValue(apiUser.Name.GivenName)
-		config.FamilyName = types.StringValue(apiUser.Name.FamilyName)
-		config.FullName = types.StringValue(apiUser.Name.FullName)
+// newUserDataSourceModel maps a user from the API the way both user data sources present it.
+func newUserDataSourceModel(u *user.User) userDataSourceModel {
+	model := userDataSourceModel{
+		Id:                         types.StringValue(u.Id),
+		PrimaryEmail:               types.StringValue(u.PrimaryEmail),
+		GivenName:                  types.StringNull(),
+		FamilyName:                 types.StringNull(),
+		FullName:                   types.StringNull(),
+		IsAdmin:                    types.BoolValue(u.IsAdmin),
+		IsDelegatedAdmin:           types.BoolValue(u.IsDelegatedAdmin),
+		AgreedToTerms:              types.BoolValue(u.AgreedToTerms),
+		Suspended:                  types.BoolValue(u.Suspended),
+		Archived:                   types.BoolValue(u.Archived),
+		ChangePasswordAtNextLogin:  types.BoolValue(u.ChangePasswordAtNextLogin),
+		IpWhitelisted:              types.BoolValue(u.IpWhitelisted),
+		IsMailboxSetup:             types.BoolValue(u.IsMailboxSetup),
+		IsEnrolledIn2Sv:            types.BoolValue(u.IsEnrolledIn2Sv),
+		IsEnforcedIn2Sv:            types.BoolValue(u.IsEnforcedIn2Sv),
+		IncludeInGlobalAddressList: types.BoolValue(u.IncludeInGlobalAddressList),
+		CustomerId:                 types.StringValue(u.CustomerId),
+		Etag:                       types.StringValue(u.Etag),
+		OrgUnitPath:                types.StringValue(u.OrgUnitPath),
+		RecoveryEmail:              types.StringValue(u.RecoveryEmail),
+		RecoveryPhone:              types.StringValue(u.RecoveryPhone),
+		SuspensionReason:           types.StringValue(u.SuspensionReason),
+		CreationTime:               types.StringValue(u.CreationTime),
+		LastLoginTime:              types.StringValue(u.LastLoginTime),
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, config)...)
+	if u.Name != nil {
+		model.GivenName = types.StringValue(u.Name.GivenName)
+		model.FamilyName = types.StringValue(u.Name.FamilyName)
+		model.FullName = types.StringValue(u.Name.FullName)
+	}
+
+	return model
 }

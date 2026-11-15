@@ -38,47 +38,56 @@ func (d *groupDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 }
 
 func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	attributes := groupDataSourceAttributes(true)
+	attributes["etag"] = schema.StringAttribute{
+		Computed:    true,
+		Description: "ETag of the resource.",
+	}
+	attributes["aliases"] = schema.ListAttribute{
+		Computed:    true,
+		ElementType: types.StringType,
+		Description: "Aliases for the group.",
+	}
+	attributes["non_editable_aliases"] = schema.ListAttribute{
+		Computed:    true,
+		ElementType: types.StringType,
+		Description: "Non-editable aliases for the group.",
+	}
+
 	resp.Schema = schema.Schema{
 		Description: "Fetches a Google Workspace group.",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The unique ID of the group.",
-			},
-			"email": schema.StringAttribute{
-				Required:    true,
-				Description: "The group's email address.",
-			},
-			"name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The group's display name.",
-			},
-			"description": schema.StringAttribute{
-				Computed:    true,
-				Description: "The group's description.",
-			},
-			"etag": schema.StringAttribute{
-				Computed:    true,
-				Description: "ETag of the resource.",
-			},
-			"direct_members_count": schema.StringAttribute{
-				Computed:    true,
-				Description: "Number of direct members in the group.",
-			},
-			"admin_created": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Whether the group was created by an administrator.",
-			},
-			"aliases": schema.ListAttribute{
-				Computed:    true,
-				ElementType: types.StringType,
-				Description: "Aliases for the group.",
-			},
-			"non_editable_aliases": schema.ListAttribute{
-				Computed:    true,
-				ElementType: types.StringType,
-				Description: "Non-editable aliases for the group.",
-			},
+		Attributes:  attributes,
+	}
+}
+
+// groupDataSourceAttributes describes a group as both gws_group and the entries of gws_groups present one; gws_group
+// adds what only fetching the one group returns. gws_group looks the group up by email, which is then required.
+func groupDataSourceAttributes(emailRequired bool) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed:    true,
+			Description: "The unique ID of the group.",
+		},
+		"email": schema.StringAttribute{
+			Required:    emailRequired,
+			Computed:    !emailRequired,
+			Description: "The group's email address.",
+		},
+		"name": schema.StringAttribute{
+			Computed:    true,
+			Description: "The group's display name.",
+		},
+		"description": schema.StringAttribute{
+			Computed:    true,
+			Description: "The group's description.",
+		},
+		"direct_members_count": schema.StringAttribute{
+			Computed:    true,
+			Description: "Number of direct members in the group.",
+		},
+		"admin_created": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether the group was created by an administrator.",
 		},
 	}
 }

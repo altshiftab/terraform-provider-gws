@@ -51,26 +51,7 @@ func (d *groupsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "List of groups.",
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Computed: true,
-						},
-						"email": schema.StringAttribute{
-							Computed: true,
-						},
-						"name": schema.StringAttribute{
-							Computed: true,
-						},
-						"description": schema.StringAttribute{
-							Computed: true,
-						},
-						"direct_members_count": schema.StringAttribute{
-							Computed: true,
-						},
-						"admin_created": schema.BoolAttribute{
-							Computed: true,
-						},
-					},
+					Attributes: groupDataSourceAttributes(false),
 				},
 			},
 		},
