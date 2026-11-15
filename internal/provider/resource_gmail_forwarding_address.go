@@ -122,15 +122,7 @@ func (r *gmailForwardingAddressResource) Read(ctx context.Context, req resource.
 
 	apiAddress, err := r.client.GetForwardingAddress(ctx, userId, forwardingEmail, fetchOptions(r.providerData)...)
 	if err != nil {
-		if isNotFound(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Error reading Gmail forwarding address",
-			fmt.Sprintf("Could not read forwarding address %s for user %s: %s", forwardingEmail, userId, apiErrorDetail(err)),
-		)
+		handleReadError(ctx, resp, err, "Error reading Gmail forwarding address", fmt.Sprintf("Could not read forwarding address %s for user %s", forwardingEmail, userId))
 		return
 	}
 

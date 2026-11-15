@@ -2,6 +2,7 @@ package provider
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	altshiftErrors "github.com/altshiftab/utils_go/pkg/errors"
 	altshiftHttpContext "github.com/altshiftab/utils_go/pkg/http/context"
 	altshiftHttpTypes "github.com/altshiftab/utils_go/pkg/http/types"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 // httpContextFromError walks the error chain for the HTTP context that the
@@ -44,6 +46,18 @@ func isNotFound(err error) bool {
 	}
 
 	return httpContext.Response.StatusCode == http.StatusNotFound
+}
+
+// handleReadError reports the error from the API call a resource's Read refreshes its state from. A 404 means the
+// object was deleted out of band, so the resource leaves the state and the next plan creates it again; anything else is
+// an error diagnostic, detail followed by the API's own account of the failure.
+func handleReadError(ctx context.Context, resp *resource.ReadResponse, err error, summary string, detail string) {
+	if isNotFound(err) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	resp.Diagnostics.AddError(summary, fmt.Sprintf("%s: %s", detail, apiErrorDetail(err)))
 }
 
 // apiErrorDetail renders err for a Terraform diagnostic. When the error carries

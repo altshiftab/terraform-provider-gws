@@ -176,15 +176,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	apiGroup, err := r.client.GetGroup(ctx, groupKey, fetchOptions(r.providerData)...)
 	if err != nil {
-		if isNotFound(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Error reading group",
-			fmt.Sprintf("Could not read group %s: %s", groupKey, apiErrorDetail(err)),
-		)
+		handleReadError(ctx, resp, err, "Error reading group", fmt.Sprintf("Could not read group %s", groupKey))
 		return
 	}
 
