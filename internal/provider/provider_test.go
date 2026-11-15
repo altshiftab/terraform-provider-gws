@@ -2,9 +2,16 @@ package provider
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/json/v2"
+	"encoding/pem"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -13,7 +20,10 @@ import (
 	"github.com/altshiftab/utils_go/pkg/oauth2/types/token_source"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 func TestResolveScopes(t *testing.T) {
@@ -158,5 +168,96 @@ func TestImpersonationSigner(t *testing.T) {
 				t.Errorf("unexpected Authorization header: got %q, want %q", header, testCase.wantHeader)
 			}
 		})
+	}
+}
+
+// TestConfigure_TokenSourceOutlivesConfigure is the refresh that failed cloudsqlpg's provider on a real apply:
+// Terraform cancels Configure's context when Configure returns, and the clients fetch their first token later.
+func TestConfigure_TokenSourceOutlivesConfigure(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/token" {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"access_token":"fetched-later","expires_in":3600,"token_type":"Bearer"}`))
+			return
+		}
+		if r.Header.Get("Authorization") != "Bearer fetched-later" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("generate key: %v", err)
+	}
+	keyDer, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		t.Fatalf("marshal key: %v", err)
+	}
+	credentials, err := json.Marshal(map[string]string{
+		"type":           "service_account",
+		"client_email":   "tf@proj.iam.gserviceaccount.com",
+		"private_key_id": "key-1",
+		"private_key":    string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDer})),
+		"token_uri":      server.URL + "/token",
+	})
+	if err != nil {
+		t.Fatalf("marshal credentials: %v", err)
+	}
+	credentialsPath := filepath.Join(t.TempDir(), "credentials.json")
+	if err := os.WriteFile(credentialsPath, credentials, 0o600); err != nil {
+		t.Fatalf("write credentials: %v", err)
+	}
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath)
+	t.Setenv(accessTokenEnvironmentVariable, "")
+
+	// An empty configuration: no oauth2, service_account or impersonation block, so Application Default Credentials.
+	ctx, cancel := context.WithCancel(context.Background())
+	gws := New("test")()
+	schemaResp := &provider.SchemaResponse{}
+	gws.Schema(ctx, provider.SchemaRequest{}, schemaResp)
+	objectType, ok := schemaResp.Schema.Type().TerraformType(ctx).(tftypes.Object)
+	if !ok {
+		t.Fatalf("provider schema type is %T, want tftypes.Object", schemaResp.Schema.Type().TerraformType(ctx))
+	}
+	nulls := make(map[string]tftypes.Value, len(objectType.AttributeTypes))
+	for name, attributeType := range objectType.AttributeTypes {
+		nulls[name] = tftypes.NewValue(attributeType, nil)
+	}
+	configureResp := &provider.ConfigureResponse{}
+	gws.Configure(
+		ctx,
+		provider.ConfigureRequest{Config: tfsdk.Config{Schema: schemaResp.Schema, Raw: tftypes.NewValue(objectType, nulls)}},
+		configureResp,
+	)
+	cancel()
+	if configureResp.Diagnostics.HasError() {
+		t.Fatalf("Configure: %v", configureResp.Diagnostics)
+	}
+
+	data, ok := configureResp.ResourceData.(*gwsProviderData)
+	if !ok || data == nil {
+		t.Fatalf("resource data is %T, want *gwsProviderData", configureResp.ResourceData)
+	}
+	client := fetch_config.New(data.fetchOption).HttpClient
+	if client == nil {
+		t.Fatal("the fetch option carries no HTTP client")
+	}
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, server.URL+"/api", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		t.Fatalf("request after Configure's context ended: %v", err)
+	}
+	if response == nil {
+		t.Fatal("request after Configure's context ended: no response")
+	}
+	_ = response.Body.Close()
+	if response.StatusCode != http.StatusNoContent {
+		t.Errorf("status = %d, want %d: the request did not carry the token fetched after Configure", response.StatusCode, http.StatusNoContent)
 	}
 }

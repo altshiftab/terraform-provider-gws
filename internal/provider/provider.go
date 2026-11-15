@@ -250,6 +250,10 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
+	// The token sources refresh with the context they are made with, long after Configure's own is
+	// cancelled; they keep its values and drop its cancellation.
+	credentialsCtx := context.WithoutCancel(ctx)
+
 	var tokenSource token_source.TokenSource
 	switch {
 	case config.Oauth2 != nil:
@@ -266,7 +270,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			},
 		}
 		tokenSource = cfg.TokenSource(
-			context.Background(),
+			credentialsCtx,
 			&token.Token{RefreshToken: config.Oauth2.RefreshToken.ValueString()},
 		)
 	case config.ServiceAccount != nil:
@@ -279,7 +283,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			return
 		}
 		ts, err := serviceAccountTokenSource.NewFromCredentialsFileWithSubject(
-			context.Background(),
+			credentialsCtx,
 			googleTokenURL,
 			&credentialsFile,
 			defaultScopes,
@@ -308,7 +312,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		}
 
 		signer, err := impersonationSigner(
-			context.Background(),
+			credentialsCtx,
 			os.Getenv(accessTokenEnvironmentVariable),
 			altshiftGcp.NewClient().FindDefaultCredentials,
 		)
@@ -327,7 +331,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			return
 		}
 		ts, err := domainWideDelegationTokenSource.New(
-			context.Background(),
+			credentialsCtx,
 			signer,
 			config.Impersonation.ServiceAccount.ValueString(),
 			config.Impersonation.Subject.ValueString(),
@@ -345,7 +349,7 @@ func (p *gwsProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	default:
 		gcpClient := altshiftGcp.NewClient()
 		ts, err := gcpClient.FindDefaultCredentials(
-			context.Background(),
+			credentialsCtx,
 			[]string{
 				"https://www.googleapis.com/auth/admin.directory.user",
 				"https://www.googleapis.com/auth/admin.directory.group",
