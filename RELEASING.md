@@ -8,12 +8,8 @@ from a local machine.
 ## Prerequisites (one-time)
 
 - `goreleaser`, `gpg`, `jq`, and `curl` installed.
-- The release **signing GPG key** present in the local keyring
-  (fingerprint `F3FA05768865F190FBB0EF51888CD0428F90299C`, key-id `888CD0428F90299C`,
-  no passphrase). Its public half is already registered with the HCP org via
-  `scripts/hcp-register-gpg-key.sh` — only re-run that if the key changes.
-- An HCP token. After `terraform login`, the scripts read it from
-  `~/.terraform.d/credentials.tfrc.json`.
+- The release **signing GPG key** in the local keyring (fingerprint `ECC40A6D6CA5C7789B933208D06826DF3F80C139`, key-id `D06826DF3F80C139`). It is RSA 2048 held in capa's TPM (moved there with `keytotpm`), so it signs only on capa, asks for its PIN, and has no other copy. That keyring's `gpg.conf` sets `digest-algo SHA256`, because the TPM cannot sign SHA-512. Its public half is registered with the HCP org via `scripts/hcp-register-gpg-key.sh`. If the TPM is lost, make a new key the same way and register it; every version released before 2026-11-15 was signed with the earlier key `888CD0428F90299C`, which stays registered so those versions still verify.
+- An HCP token. `terraform login` stores it sealed to capa's TPM through the `tpm` credentials helper (`~/.terraform.d/plugins/terraform-credentials-tpm`, named in `~/.terraformrc`), and step 3 reads it back from there.
 
 ## Cutting a release
 
@@ -23,12 +19,12 @@ git commit -am "..."
 git tag -a vX.Y.Z -m vX.Y.Z
 
 # 2. Build + sign artifacts into dist/.
-GPG_FINGERPRINT=F3FA05768865F190FBB0EF51888CD0428F90299C \
+GPG_FINGERPRINT=ECC40A6D6CA5C7789B933208D06826DF3F80C139 \
   goreleaser release --clean --skip=publish
 
 # 3. Publish dist/ to the HCP private registry.
-export TF_TOKEN_app_terraform_io="$(jq -r '.credentials["app.terraform.io"].token' ~/.terraform.d/credentials.tfrc.json)"
-export GPG_KEY_ID=888CD0428F90299C
+export TF_TOKEN_app_terraform_io="$(~/.terraform.d/plugins/terraform-credentials-tpm get app.terraform.io | jq -r .token)"
+export GPG_KEY_ID=D06826DF3F80C139
 ./scripts/publish-hcp.sh
 
 # 4. Mirror the archives for the drift check, which reads the provider from a

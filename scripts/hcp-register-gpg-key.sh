@@ -11,13 +11,14 @@
 set -euo pipefail
 
 ORG="${HCP_ORG:-altshift}"
-KEY_EMAIL="${GPG_KEY_EMAIL:-signup.claude@altshift.se}"
+# By fingerprint: the keyring also holds the retired key's public half, under the same email.
+KEY="${GPG_FINGERPRINT:-ECC40A6D6CA5C7789B933208D06826DF3F80C139}"
 TOKEN="${TF_TOKEN_app_terraform_io:-}"
 
 [[ -n "$TOKEN" ]] || { echo "error: TF_TOKEN_app_terraform_io is not set" >&2; exit 1; }
 
-ascii_armor="$(gpg --armor --export "$KEY_EMAIL")"
-[[ -n "$ascii_armor" ]] || { echo "error: no public key found for $KEY_EMAIL" >&2; exit 1; }
+ascii_armor="$(gpg --armor --export "$KEY")"
+[[ -n "$ascii_armor" ]] || { echo "error: no public key found for $KEY" >&2; exit 1; }
 
 payload="$(jq -n --arg ns "$ORG" --arg armor "$ascii_armor" '{
   data: {

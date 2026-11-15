@@ -8,7 +8,7 @@
 # Publishing to the HCP private registry is done separately by
 # scripts/publish-hcp.sh; GoReleaser does NOT create a GitHub release here.
 #
-# Run with:  GPG_FINGERPRINT=F3FA05768865F190FBB0EF51888CD0428F90299C \
+# Run with:  GPG_FINGERPRINT=ECC40A6D6CA5C7789B933208D06826DF3F80C139 \
 #            goreleaser release --clean --skip=publish
 version: 2
 
