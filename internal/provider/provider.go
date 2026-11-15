@@ -33,7 +33,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const googleTokenURL = "https://oauth2.googleapis.com/token"
+const googleTokenURL = "https://oauth2.googleapis.com/token" //nolint:gosec // G101: a public endpoint, not a credential
 
 // accessTokenEnvironmentVariable names an access token that signs the
 // impersonation assertions in place of Application Default Credentials. It is

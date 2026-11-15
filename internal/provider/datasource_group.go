@@ -41,7 +41,7 @@ func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 	attributes := groupDataSourceAttributes(true)
 	attributes["etag"] = schema.StringAttribute{
 		Computed:    true,
-		Description: "ETag of the resource.",
+		Description: etagDescription,
 	}
 	attributes["aliases"] = schema.ListAttribute{
 		Computed:    true,
@@ -68,10 +68,10 @@ func groupDataSourceAttributes(emailRequired bool) map[string]schema.Attribute {
 			Computed:    true,
 			Description: "The unique ID of the group.",
 		},
-		"email": schema.StringAttribute{
+		emailAttribute: schema.StringAttribute{
 			Required:    emailRequired,
 			Computed:    !emailRequired,
-			Description: "The group's email address.",
+			Description: groupEmailDescription,
 		},
 		"name": schema.StringAttribute{
 			Computed:    true,

@@ -47,9 +47,9 @@ func (r *gmailForwardingAddressResource) Schema(_ context.Context, _ resource.Sc
 			"to it is refused until someone there confirms. The API cannot do that step. An address that already " +
 			"exists is brought under management with terraform import (user_id/forwarding_email), not by creating it.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -61,7 +61,7 @@ func (r *gmailForwardingAddressResource) Schema(_ context.Context, _ resource.Sc
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"verification_status": schema.StringAttribute{
+			verificationStatusAttribute: schema.StringAttribute{
 				Computed:    true,
 				Description: "\"pending\" until the confirmation Gmail sent to the address is acted on, then \"accepted\".",
 				PlanModifiers: []planmodifier.String{
@@ -175,7 +175,7 @@ func (r *gmailForwardingAddressResource) ImportState(ctx context.Context, req re
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("user_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(gmailUserIdAttribute), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("forwarding_email"), parts[1])...)
 }
 

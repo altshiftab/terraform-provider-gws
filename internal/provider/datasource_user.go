@@ -125,7 +125,7 @@ func userDataSourceAttributes(primaryEmailRequired bool) map[string]schema.Attri
 			Computed:    true,
 			Description: "Whether 2-step verification is enforced for the user.",
 		},
-		"include_in_global_address_list": schema.BoolAttribute{
+		includeInGlobalAddressListAttribute: schema.BoolAttribute{
 			Computed:    true,
 			Description: "Whether the user is included in the Global Address List.",
 		},
@@ -135,7 +135,7 @@ func userDataSourceAttributes(primaryEmailRequired bool) map[string]schema.Attri
 		},
 		"etag": schema.StringAttribute{
 			Computed:    true,
-			Description: "ETag of the resource.",
+			Description: etagDescription,
 		},
 		"org_unit_path": schema.StringAttribute{
 			Computed:    true,

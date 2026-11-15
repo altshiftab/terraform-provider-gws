@@ -44,9 +44,9 @@ func (d *groupMembersDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Lists all members of a Google Workspace group.",
 		Attributes: map[string]schema.Attribute{
-			"group_key": schema.StringAttribute{
+			groupKeyAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The group's email address or unique ID.",
+				Description: groupKeyDescription,
 			},
 			"members": schema.ListNestedAttribute{
 				Computed:     true,

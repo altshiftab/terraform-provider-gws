@@ -35,15 +35,15 @@ func (d *gmailForwardingAddressDataSource) Schema(_ context.Context, _ datasourc
 	resp.Schema = schema.Schema{
 		Description: "Fetches an address a Gmail user may forward mail to.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 			},
 			"forwarding_email": schema.StringAttribute{
 				Required:    true,
 				Description: "The address mail may be forwarded to.",
 			},
-			"verification_status": schema.StringAttribute{
+			verificationStatusAttribute: schema.StringAttribute{
 				Computed:    true,
 				Description: "\"pending\" until the confirmation Gmail sent to the address is acted on, then \"accepted\".",
 			},

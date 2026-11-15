@@ -36,9 +36,9 @@ func (d *gmailFilterDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Fetches a Gmail filter for a Google Workspace user.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 			},
 			"filter_id": schema.StringAttribute{
 				Required:    true,
@@ -56,7 +56,7 @@ func (d *gmailFilterDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 						Computed:    true,
 						Description: "The recipient's display name or email address.",
 					},
-					"subject": schema.StringAttribute{
+					filterSubjectAttribute: schema.StringAttribute{
 						Computed:    true,
 						Description: "Case-insensitive phrase found in the message's subject.",
 					},

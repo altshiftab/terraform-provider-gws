@@ -50,9 +50,9 @@ func (r *gmailSendAsResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Manages a Gmail send-as alias for a Google Workspace user.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -98,7 +98,7 @@ func (r *gmailSendAsResource) Schema(_ context.Context, _ resource.SchemaRequest
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"verification_status": schema.StringAttribute{
+			verificationStatusAttribute: schema.StringAttribute{
 				Computed:    true,
 				Description: "Indicates whether this address has been verified for use as a send-as alias.",
 				PlanModifiers: []planmodifier.String{
@@ -223,7 +223,7 @@ func (r *gmailSendAsResource) ImportState(ctx context.Context, req resource.Impo
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("user_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(gmailUserIdAttribute), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("send_as_email"), parts[1])...)
 }
 

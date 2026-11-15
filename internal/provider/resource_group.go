@@ -58,9 +58,9 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"email": schema.StringAttribute{
+			emailAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The group's email address.",
+				Description: groupEmailDescription,
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -72,7 +72,7 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"etag": schema.StringAttribute{
 				Computed:    true,
-				Description: "ETag of the resource.",
+				Description: etagDescription,
 			},
 			"direct_members_count": schema.StringAttribute{
 				Computed:    true,
@@ -261,7 +261,7 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 func (r *groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("email"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root(emailAttribute), req, resp)
 }
 
 func mapGroupToState(ctx context.Context, g *group.Group, state *groupResourceModel) {

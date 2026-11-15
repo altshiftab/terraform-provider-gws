@@ -38,9 +38,9 @@ func (d *groupMemberDataSource) Metadata(_ context.Context, req datasource.Metad
 
 func (d *groupMemberDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attributes := groupMemberDataSourceAttributes(true)
-	attributes["group_key"] = schema.StringAttribute{
+	attributes[groupKeyAttribute] = schema.StringAttribute{
 		Required:    true,
-		Description: "The group's email address or unique ID.",
+		Description: groupKeyDescription,
 	}
 
 	resp.Schema = schema.Schema{
@@ -57,7 +57,7 @@ func groupMemberDataSourceAttributes(emailRequired bool) map[string]schema.Attri
 			Computed:    true,
 			Description: "The unique ID of the group member.",
 		},
-		"email": schema.StringAttribute{
+		emailAttribute: schema.StringAttribute{
 			Required:    emailRequired,
 			Computed:    !emailRequired,
 			Description: "The member's email address.",
@@ -76,7 +76,7 @@ func groupMemberDataSourceAttributes(emailRequired bool) map[string]schema.Attri
 		},
 		"etag": schema.StringAttribute{
 			Computed:    true,
-			Description: "ETag of the resource.",
+			Description: etagDescription,
 		},
 		"status": schema.StringAttribute{
 			Computed:    true,

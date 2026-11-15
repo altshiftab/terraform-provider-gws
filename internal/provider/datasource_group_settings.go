@@ -30,7 +30,7 @@ func (d *groupSettingsDataSource) Schema(_ context.Context, _ datasource.SchemaR
 		Attributes: map[string]schema.Attribute{
 			"group_email": schema.StringAttribute{
 				Required:    true,
-				Description: "The group's email address.",
+				Description: groupEmailDescription,
 			},
 			"who_can_join": schema.StringAttribute{
 				Computed:    true,
@@ -116,7 +116,7 @@ func (d *groupSettingsDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				Computed:    true,
 				Description: "Whether members can post as the group.",
 			},
-			"include_in_global_address_list": schema.StringAttribute{
+			includeInGlobalAddressListAttribute: schema.StringAttribute{
 				Computed:    true,
 				Description: "Whether the group appears in the Global Address List.",
 			},

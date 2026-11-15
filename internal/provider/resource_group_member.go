@@ -57,14 +57,14 @@ func (r *groupMemberResource) Schema(_ context.Context, _ resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"group_key": schema.StringAttribute{
+			groupKeyAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The group's email address or unique ID.",
+				Description: groupKeyDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"email": schema.StringAttribute{
+			emailAttribute: schema.StringAttribute{
 				Required:    true,
 				Description: "The member's email address.",
 				PlanModifiers: []planmodifier.String{
@@ -94,7 +94,7 @@ func (r *groupMemberResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"etag": schema.StringAttribute{
 				Computed:    true,
-				Description: "ETag of the resource.",
+				Description: etagDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -296,8 +296,8 @@ func (r *groupMemberResource) ImportState(ctx context.Context, req resource.Impo
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("group_key"), groupKey)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("email"), match.Email)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(groupKeyAttribute), groupKey)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(emailAttribute), match.Email)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), match.Id)...)
 }
 

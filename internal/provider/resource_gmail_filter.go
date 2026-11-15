@@ -64,9 +64,9 @@ func (r *gmailFilterResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Manages a Gmail filter for a Google Workspace user. Filters are immutable in the Gmail API; any change forces replacement.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -93,7 +93,7 @@ func (r *gmailFilterResource) Schema(_ context.Context, _ resource.SchemaRequest
 						Optional:    true,
 						Description: "The recipient's display name or email address.",
 					},
-					"subject": schema.StringAttribute{
+					filterSubjectAttribute: schema.StringAttribute{
 						Optional:    true,
 						Description: "Case-insensitive phrase found in the message's subject.",
 					},
@@ -257,7 +257,7 @@ func (r *gmailFilterResource) ImportState(ctx context.Context, req resource.Impo
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("user_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(gmailUserIdAttribute), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("filter_id"), parts[1])...)
 }
 

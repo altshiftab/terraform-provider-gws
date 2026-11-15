@@ -41,9 +41,9 @@ func (d *gmailSendAsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Fetches a Gmail send-as alias for a Google Workspace user.",
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			gmailUserIdAttribute: schema.StringAttribute{
 				Required:    true,
-				Description: "The user's email address or the special value \"me\".",
+				Description: gmailUserIdDescription,
 			},
 			"send_as_email": schema.StringAttribute{
 				Required:    true,
@@ -73,7 +73,7 @@ func (d *gmailSendAsDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 				Computed:    true,
 				Description: "Whether this address is selected as the default \"From:\" address.",
 			},
-			"verification_status": schema.StringAttribute{
+			verificationStatusAttribute: schema.StringAttribute{
 				Computed:    true,
 				Description: "Indicates whether this address has been verified for use as a send-as alias.",
 			},

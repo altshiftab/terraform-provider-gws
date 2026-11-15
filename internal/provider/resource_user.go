@@ -128,7 +128,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Default:     booldefault.StaticBool(false),
 				Description: "Whether the user's IP address is allowlisted.",
 			},
-			"include_in_global_address_list": schema.BoolAttribute{
+			includeInGlobalAddressListAttribute: schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
@@ -164,7 +164,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			},
 			"etag": schema.StringAttribute{
 				Computed:    true,
-				Description: "ETag of the resource.",
+				Description: etagDescription,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
